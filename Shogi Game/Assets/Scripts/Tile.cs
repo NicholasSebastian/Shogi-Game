@@ -61,7 +61,11 @@ public class Tile : MonoBehaviour
 
     public bool getSide()
     {
-        return this.piece.getSide();
+        return (
+            this.piece != null ?
+            this.piece.getSide() :
+            false
+        );
     }
 
     public void setState(PieceType state, bool enemy)
@@ -78,6 +82,7 @@ public class Tile : MonoBehaviour
             }
             else
             {
+                Debug.Log("Replaced " + this.piece.getPiece() + " with " + state);
                 removePiece();
                 addPiece(state, enemy);
             }
@@ -148,9 +153,9 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public List<int[]> selected()
+    public List<int[]> selected(Tile[,] board)
     {
-        return piece.selected(this.row, this.col);
+        return piece.selected(this.row, this.col, board);
     }
 
     public void deselected()

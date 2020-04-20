@@ -38,48 +38,37 @@ public class Piece : MonoBehaviour
         this.enemy = enemy;
     }
 
-    public List<int[]> selected(int row, int col)
+    public List<int[]> selected(int row, int col, Tile[,] board)
     {
         transform.Translate(0, hoverHeight, 0);
+        return pieceMoves(row, col, board);
+    }
 
+    public void deselected()
+    {
+        transform.Translate(0, -hoverHeight, 0);
+    }
+
+    private List<int[]> pieceMoves(int row, int col, Tile[,] board)
+    {
         possibleMoves.Clear();
         switch (this.piece)
         {
             case PieceType.Pawn:
                 possibleMoves.Add(new int[2] { row + 1, col });
-                return possibleMoves;
-
-            case PieceType.Bishop:
-                for (int i = 1; i <= Board.boardSize; i++)
-                {
-                    possibleMoves.Add(new int[2] { row + i, col - i });
-                    possibleMoves.Add(new int[2] { row + i, col + i });
-                    possibleMoves.Add(new int[2] { row - i, col - i });
-                    possibleMoves.Add(new int[2] { row - i, col + i });
-                }
-                return possibleMoves;
-
-            case PieceType.Rook:
-                for (int i = 1; i <= Board.boardSize; i++)
-                {
-                    possibleMoves.Add(new int[2] { row + i, col });
-                    possibleMoves.Add(new int[2] { row - i, col });
-                    possibleMoves.Add(new int[2] { row, col + i });
-                    possibleMoves.Add(new int[2] { row, col - i });
-                }
-                return possibleMoves;
+                break;
 
             case PieceType.Lance:
                 for (int i = 1; i <= Board.boardSize; i++)
                 {
                     possibleMoves.Add(new int[2] { row + i, col });
                 }
-                return possibleMoves;
+                break;
 
             case PieceType.Knight:
                 possibleMoves.Add(new int[2] { row + 2, col - 1 });
                 possibleMoves.Add(new int[2] { row + 2, col + 1 });
-                return possibleMoves;
+                break;
 
             case PieceType.Silver:
                 possibleMoves.Add(new int[2] { row + 1, col });
@@ -87,7 +76,7 @@ public class Piece : MonoBehaviour
                 possibleMoves.Add(new int[2] { row + 1, col + 1 });
                 possibleMoves.Add(new int[2] { row - 1, col - 1 });
                 possibleMoves.Add(new int[2] { row - 1, col + 1 });
-                return possibleMoves;
+                break;
 
             case PieceType.Gold:
                 possibleMoves.Add(new int[2] { row + 1, col });
@@ -96,7 +85,7 @@ public class Piece : MonoBehaviour
                 possibleMoves.Add(new int[2] { row, col - 1 });
                 possibleMoves.Add(new int[2] { row, col + 1 });
                 possibleMoves.Add(new int[2] { row - 1, col });
-                return possibleMoves;
+                break;
 
             case PieceType.King:
                 possibleMoves.Add(new int[2] { row + 1, col });
@@ -107,15 +96,111 @@ public class Piece : MonoBehaviour
                 possibleMoves.Add(new int[2] { row + 1, col + 1 });
                 possibleMoves.Add(new int[2] { row - 1, col - 1 });
                 possibleMoves.Add(new int[2] { row - 1, col + 1 });
-                return possibleMoves;
+                break;
+
+            case PieceType.Bishop:
+                bishopMoves(row, col, board);
+                break;
+
+            case PieceType.Rook:
+                rookMoves(row, col, board);
+                break;
 
             default:
-                return null;
+                break;
+        }
+        return possibleMoves;
+    }
+
+    private void bishopMoves(int row, int col, Tile[,] board)
+    {
+        for (int i = 1; i < Board.boardSize; i++)
+        {
+            if (row + i > 8 || col + i > 8) break;
+            if (board[row + i, col + i].getState() == PieceType.None ||
+                board[row + i, col + i].getSide())
+            {
+                possibleMoves.Add(new int[2] { row + i, col + i });
+                if (board[row + i, col + i].getSide()) break;
+            }
+            else break;
+        }
+        for (int i = 1; i < Board.boardSize; i++)
+        {
+            if (row + i > 8 || col - i < 0) break;
+            if (board[row + i, col - i].getState() == PieceType.None ||
+                board[row + i, col - i].getSide())
+            {
+                possibleMoves.Add(new int[2] { row + i, col - i });
+                if (board[row + i, col - i].getSide()) break;
+            }
+            else break;
+        }
+        for (int i = 1; i < Board.boardSize; i++)
+        {
+            if (row - i < 0 || col + i > 8) break;
+            if (board[row - i, col + i].getState() == PieceType.None ||
+                board[row - i, col + i].getSide())
+            {
+                possibleMoves.Add(new int[2] { row - i, col + i });
+                if (board[row - i, col + i].getSide()) break;
+            }
+            else break;
+        }
+        for (int i = 1; i < Board.boardSize; i++)
+        {
+            if (row - i < 0 || col - i < 0) break;
+            if (board[row - i, col - i].getState() == PieceType.None ||
+                board[row - i, col - i].getSide())
+            {
+                possibleMoves.Add(new int[2] { row - i, col - i });
+                if (board[row - i, col - i].getSide()) break;
+            }
+            else break;
         }
     }
 
-    public void deselected()
+    private void rookMoves(int row, int col, Tile[,] board)
     {
-        transform.Translate(0, -hoverHeight, 0);
+        for (int i = row + 1; i < Board.boardSize; i++)
+        {
+            if (board[i, col].getState() == PieceType.None ||
+                board[i, col].getSide())
+            {
+                possibleMoves.Add(new int[2] { i, col });
+                if (board[i, col].getSide()) break;
+            }
+            else break;
+        }
+        for (int i = row - 1; i >= 0; i--)
+        {
+            if (board[i, col].getState() == PieceType.None ||
+                board[i, col].getSide())
+            {
+                possibleMoves.Add(new int[2] { i, col });
+                if (board[i, col].getSide()) break;
+            }
+            else break;
+        }
+        for (int i = col + 1; i < Board.boardSize; i++)
+        {
+            if (board[row, i].getState() == PieceType.None ||
+                board[row, i].getSide())
+            {
+                possibleMoves.Add(new int[2] { row, i });
+                if (board[row, i].getSide()) break;
+            }
+            else break;
+        }
+        for (int i = col - 1; i >= 0; i--)
+        {
+            if (board[row, i].getState() == PieceType.None ||
+                board[row, i].getSide())
+            {
+                possibleMoves.Add(new int[2] { row, i });
+                if (board[row, i].getSide()) break;
+            }
+            else break;
+        }
     }
 }

@@ -122,7 +122,7 @@ public class Board : MonoBehaviour
 
     private void selectPiece()
     {
-        foreach (int[] possibleMoves in this.selectedTile.selected())
+        foreach (int[] possibleMoves in this.selectedTile.selected(this.board))
         {
             if (possibleMoves[0] >= 0 && possibleMoves[0] < boardSize &&
                 possibleMoves[1] >= 0 && possibleMoves[1] < boardSize)
