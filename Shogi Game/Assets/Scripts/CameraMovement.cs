@@ -4,15 +4,22 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    // TODO: make the camera follow and lerp the mouse, forwards and backwards only.
+    private static readonly float speed = 0.01f;
 
-    void Start()
+    Vector3 targetPosition;
+
+    void FixedUpdate()
     {
-
-    }
-
-    void Update()
-    {
-
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            targetPosition = new Vector3(
+                transform.position.x,
+                transform.position.y,
+                Mathf.Clamp(hit.point.z - 5.5f, -6.5f, -3.5f)
+            );
+        }
+        transform.position = Vector3.Lerp(transform.position, targetPosition, speed);
     }
 }
