@@ -9,11 +9,26 @@ public class Tile : MonoBehaviour
     private Piece piece;
 
     private GameObject highlight;
+
     private GameObject pawnPrefab;
+    private GameObject bishopPrefab;
+    private GameObject rookPrefab;
+    private GameObject lancePrefab;
+    private GameObject knightPrefab;
+    private GameObject silverPrefab;
+    private GameObject goldPrefab;
+    private GameObject kingPrefab;
 
     void Start()
     {
         pawnPrefab = (GameObject)Resources.Load("Pawn");
+        bishopPrefab = (GameObject)Resources.Load("Bishop");
+        rookPrefab = (GameObject)Resources.Load("Rook");
+        lancePrefab = (GameObject)Resources.Load("Lance");
+        knightPrefab = (GameObject)Resources.Load("Knight");
+        silverPrefab = (GameObject)Resources.Load("Silver");
+        goldPrefab = (GameObject)Resources.Load("Gold");
+        kingPrefab = (GameObject)Resources.Load("King");
 
         highlight = transform.GetChild(1).gameObject;
         highlight.SetActive(false);
@@ -82,7 +97,41 @@ public class Tile : MonoBehaviour
                     Instantiate(pawnPrefab, transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
-            // add other piece cases here.
+            case PieceType.Bishop:
+                this.piece =
+                    Instantiate(bishopPrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
+            case PieceType.Rook:
+                this.piece =
+                    Instantiate(rookPrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
+            case PieceType.Lance:
+                this.piece =
+                    Instantiate(lancePrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
+            case PieceType.Knight:
+                this.piece =
+                    Instantiate(knightPrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
+            case PieceType.Silver:
+                this.piece =
+                    Instantiate(silverPrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
+            case PieceType.Gold:
+                this.piece =
+                    Instantiate(goldPrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
+            case PieceType.King:
+                this.piece =
+                    Instantiate(kingPrefab, transform.position, Quaternion.identity)
+                    .GetComponent<Piece>();
+                break;
             default:
                 break;
         }
@@ -103,7 +152,7 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public int[][] selected()
+    public List<int[]> selected()
     {
         return piece.selected(this.row, this.col);
     }

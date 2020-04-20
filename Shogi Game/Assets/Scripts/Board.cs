@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    private static readonly int boardSize = 9;
+    public static readonly int boardSize = 9;
     private Tile[,] board = new Tile[boardSize, boardSize];
     private Tile selectedTile;
 
@@ -39,12 +39,21 @@ public class Board : MonoBehaviour
 
     private void preparePlayer()
     {
-        // Row of pawns across the board.
         for (int i = 0; i < boardSize; i++)
         {
             board[2, i].setState(PieceType.Pawn);
         }
-        // TODO: add the other pieces.
+        board[1, 1].setState(PieceType.Bishop);
+        board[1, 7].setState(PieceType.Rook);
+        board[0, 0].setState(PieceType.Lance);
+        board[0, 8].setState(PieceType.Lance);
+        board[0, 1].setState(PieceType.Knight);
+        board[0, 7].setState(PieceType.Knight);
+        board[0, 2].setState(PieceType.Silver);
+        board[0, 6].setState(PieceType.Silver);
+        board[0, 3].setState(PieceType.Gold);
+        board[0, 5].setState(PieceType.Gold);
+        board[0, 4].setState(PieceType.King);
     }
 
     private void SelectionManager()
@@ -97,7 +106,11 @@ public class Board : MonoBehaviour
     {
         foreach (int[] possibleMoves in this.selectedTile.selected())
         {
-            board[possibleMoves[0], possibleMoves[1]].highlightEnable();
+            if (possibleMoves[0] >= 0 && possibleMoves[0] < boardSize &&
+                possibleMoves[1] >= 0 && possibleMoves[1] < boardSize)
+            {
+                board[possibleMoves[0], possibleMoves[1]].highlightEnable();
+            }
         }
     }
 
