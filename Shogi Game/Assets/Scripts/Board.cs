@@ -13,7 +13,7 @@ public class Board : MonoBehaviour
     void Start()
     {
         initializeBoard();
-        preparePlayer();
+        prepareBoard();
     }
 
     void Update()
@@ -37,23 +37,41 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void preparePlayer()
+    private void prepareBoard()
     {
+        // Prepare the player's side.
         for (int i = 0; i < boardSize; i++)
         {
-            board[2, i].setState(PieceType.Pawn);
+            board[2, i].setState(PieceType.Pawn, false);
         }
-        board[1, 1].setState(PieceType.Bishop);
-        board[1, 7].setState(PieceType.Rook);
-        board[0, 0].setState(PieceType.Lance);
-        board[0, 8].setState(PieceType.Lance);
-        board[0, 1].setState(PieceType.Knight);
-        board[0, 7].setState(PieceType.Knight);
-        board[0, 2].setState(PieceType.Silver);
-        board[0, 6].setState(PieceType.Silver);
-        board[0, 3].setState(PieceType.Gold);
-        board[0, 5].setState(PieceType.Gold);
-        board[0, 4].setState(PieceType.King);
+        board[1, 1].setState(PieceType.Bishop, false);
+        board[1, 7].setState(PieceType.Rook, false);
+        board[0, 0].setState(PieceType.Lance, false);
+        board[0, 8].setState(PieceType.Lance, false);
+        board[0, 1].setState(PieceType.Knight, false);
+        board[0, 7].setState(PieceType.Knight, false);
+        board[0, 2].setState(PieceType.Silver, false);
+        board[0, 6].setState(PieceType.Silver, false);
+        board[0, 3].setState(PieceType.Gold, false);
+        board[0, 5].setState(PieceType.Gold, false);
+        board[0, 4].setState(PieceType.King, false);
+
+        // Prepare the enemy's side.
+        for (int i = 0; i < boardSize; i++)
+        {
+            board[6, i].setState(PieceType.Pawn, true);
+        }
+        board[7, 7].setState(PieceType.Bishop, true);
+        board[7, 1].setState(PieceType.Rook, true);
+        board[8, 8].setState(PieceType.Lance, true);
+        board[8, 0].setState(PieceType.Lance, true);
+        board[8, 7].setState(PieceType.Knight, true);
+        board[8, 1].setState(PieceType.Knight, true);
+        board[8, 6].setState(PieceType.Silver, true);
+        board[8, 2].setState(PieceType.Silver, true);
+        board[8, 5].setState(PieceType.Gold, true);
+        board[8, 3].setState(PieceType.Gold, true);
+        board[8, 4].setState(PieceType.King, true);
     }
 
     private void SelectionManager()
@@ -71,23 +89,23 @@ public class Board : MonoBehaviour
                 {
                     if (clickedTile.getState() != PieceType.None)
                     {
-                        if (this.selectedTile)
+                        if (clickedTile.getSide() == false)
                         {
-                            deselectPiece();
-                        }
-                        this.selectedTile = clickedTile;
-                        selectPiece();
-                    }
-                    else
-                    {
-                        if (clickedTile.isHighlighted())
-                        {
-                            movePiece(clickedTile);
+                            if (this.selectedTile)
+                            {
+                                deselectPiece();
+                            }
+                            this.selectedTile = clickedTile;
+                            selectPiece();
                         }
                         else
                         {
-                            deselectPiece();
+                            movePiece(clickedTile);
                         }
+                    }
+                    else
+                    {
+                        movePiece(clickedTile);
                     }
                 }
                 else
@@ -130,10 +148,17 @@ public class Board : MonoBehaviour
 
     private void movePiece(Tile targetTile)
     {
-        if (this.selectedTile)
+        if (targetTile.isHighlighted())
         {
-            targetTile.setState(this.selectedTile.getState());
-            this.selectedTile.setState(PieceType.None);
+            if (this.selectedTile)
+            {
+                targetTile.setState(this.selectedTile.getState(), false);
+                this.selectedTile.setState(PieceType.None, false);
+                deselectPiece();
+            }
+        }
+        else
+        {
             deselectPiece();
         }
     }

@@ -5,16 +5,16 @@ using UnityEngine;
 public enum PieceType
 {
     None,
-    Pawn, Bishop, Rook, Lance, Knight, Silver, Gold, King,
-    ProPawn, ProBishop, ProRook, ProLance, ProKnight, ProSilver, ProGold, ProKing,
-    EnemyPawn, EnemyBishop, EnemyRook, EnemyLance, EnemyKnight, EnemySilver, EnemyGold, EnemyKing,
-    EnemyProPawn, EnemyProBishop, EnemyProRook, EnemyProLance, EnemyProKnight, EnemyProSilver, EnemyProGold, EnemyProKing
+    Pawn, Bishop, Rook, Lance, Knight, Silver, Gold, King
 };
 
 public class Piece : MonoBehaviour
 {
     private static readonly float hoverHeight = 0.3f;
+
     private PieceType piece = PieceType.None;
+    private bool promoted = false;
+    private bool enemy = false;
 
     private List<int[]> possibleMoves = new List<int[]>();
 
@@ -26,6 +26,16 @@ public class Piece : MonoBehaviour
     public void setPiece(PieceType piece)
     {
         this.piece = piece;
+    }
+
+    public bool getSide()
+    {
+        return enemy;
+    }
+
+    public void setSide(bool enemy)
+    {
+        this.enemy = enemy;
     }
 
     public List<int[]> selected(int row, int col)

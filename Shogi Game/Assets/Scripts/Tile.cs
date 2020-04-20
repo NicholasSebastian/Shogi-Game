@@ -44,16 +44,6 @@ public class Tile : MonoBehaviour
         return col;
     }
 
-    public void setRow(int row)
-    {
-        this.row = row;
-    }
-
-    public void setCol(int col)
-    {
-        this.col = col;
-    }
-
     public void setPosition(int row, int col)
     {
         this.row = row;
@@ -69,7 +59,12 @@ public class Tile : MonoBehaviour
         );
     }
 
-    public void setState(PieceType state)
+    public bool getSide()
+    {
+        return this.piece.getSide();
+    }
+
+    public void setState(PieceType state, bool enemy)
     {
         if (state == PieceType.None)
         {
@@ -79,16 +74,17 @@ public class Tile : MonoBehaviour
         {
             if (this.piece == null)
             {
-                addPiece(state);
+                addPiece(state, enemy);
             }
             else
             {
-                replacePiece(state);
+                removePiece();
+                addPiece(state, enemy);
             }
         }
     }
 
-    private void addPiece(PieceType state)
+    private void addPiece(PieceType state, bool enemy)
     {
         switch (state)
         {
@@ -135,12 +131,12 @@ public class Tile : MonoBehaviour
             default:
                 break;
         }
+        if (enemy)
+        {
+            this.piece.gameObject.transform.GetChild(0).Rotate(0, 180, 0, Space.Self);
+        }
         this.piece.setPiece(state);
-    }
-
-    private void replacePiece(PieceType state)
-    {
-        // code here.
+        this.piece.setSide(enemy);
     }
 
     private void removePiece()
