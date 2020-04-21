@@ -11,6 +11,7 @@ public enum PieceType
 public class Piece : MonoBehaviour
 {
     private static readonly float hoverHeight = 0.3f;
+    private static readonly float movementSpeed = 10.0f;
 
     private PieceType piece = PieceType.None;
     private bool promoted = false;
@@ -47,6 +48,21 @@ public class Piece : MonoBehaviour
     public void deselected()
     {
         transform.Translate(0, -hoverHeight, 0);
+    }
+
+    public IEnumerator moveAnimation(Vector3 targetPosition)
+    {
+        Vector3 startPosition = transform.position;
+        float distance = Vector3.Distance(startPosition, targetPosition);
+        for (float i = 0.0f, c = 0.0f; i <= 1.0f;
+            c += movementSpeed * Time.deltaTime,
+            i = c / distance)
+        {
+            transform.position = Vector3.Lerp(
+                startPosition, targetPosition, i
+            );
+            yield return null;
+        }
     }
 
     private List<int[]> pieceMoves(int row, int col, Tile[,] board)

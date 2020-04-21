@@ -152,14 +152,21 @@ public class Board : MonoBehaviour
         {
             if (this.selectedTile)
             {
-                targetTile.setState(this.selectedTile.getState(), false);
-                this.selectedTile.setState(PieceType.None, false);
-                deselectPiece();
+                StartCoroutine(movement(targetTile));
             }
         }
         else
         {
             deselectPiece();
         }
+    }
+
+    private IEnumerator movement(Tile targetTile)
+    {
+        yield return
+            this.selectedTile.StartCoroutine(
+                this.selectedTile.moveState(targetTile)
+            );
+        deselectPiece();
     }
 }
