@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Game Manager script.
-// TODO: Enemy Movement.
 // TODO: Piece Promotion.
+// TODO: Piece Face Textures.
+// TODO: Checkmate Detection.
 // TODO: Sounds.
 // TODO: UI.
 
@@ -84,6 +85,37 @@ public class Board : MonoBehaviour
             else
                 yield return
                 StartCoroutine(EnemyControls());
+
+            GameCheck();
+        }
+    }
+
+    private void GameCheck()
+    {
+        int playerPieces = 0, enemyPieces = 0;
+        bool playerKing = false, enemyKing = false;
+
+        foreach (Tile tile in board)
+        {
+            if (tile.isEnemy()) enemyPieces++;
+            else playerPieces++;
+
+            if (tile.getState() == PieceType.King)
+            {
+                if (tile.isEnemy()) enemyKing = true;
+                else playerKing = true;
+            }
+        }
+
+        if (enemyPieces == 0 || enemyKing == false)
+        {
+            Debug.Log("PLAYER WINS");
+            game = false;
+        }
+        else if (playerPieces == 0 || playerKing == false)
+        {
+            Debug.Log("ENEMY WINS");
+            game = false;
         }
     }
 
@@ -184,7 +216,11 @@ public class Board : MonoBehaviour
             foreach (Tile tile in board)
                 if (tile.getState() != PieceType.None && tile.isEnemy())
                     enemyTiles.Add(tile);
-            Tile selectedEnemyTile = enemyTiles[Random.Range(0, enemyTiles.Count - 1)];
+            Tile selectedEnemyTile = enemyTiles[(
+                Random.value < 0.8f ?
+                Random.Range(0, Mathf.RoundToInt((enemyTiles.Count - 1) / 2)) :
+                Random.Range(Mathf.RoundToInt((enemyTiles.Count - 1) / 2) + 1, enemyTiles.Count - 1)
+            )];
             List<int[]> possibleMoves = selectedEnemyTile.selected(this.board);
             for (int i = possibleMoves.Count - 1; i >= 0; i--)
             {

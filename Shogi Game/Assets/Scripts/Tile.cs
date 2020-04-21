@@ -77,9 +77,9 @@ public class Tile : MonoBehaviour
             else
             {
                 Debug.Log(
-                    (this.piece.isEnemy() ? "Player's " : "Enemy's ") + this.piece.getPiece()
+                    (this.piece.isEnemy() ? "Player's " : "Enemy's ") + state
                     + " killed " +
-                    (this.piece.isEnemy() ? "Enemy's " : "Player's ") + state
+                    (this.piece.isEnemy() ? "Enemy's " : "Player's ") + this.piece.getPiece()
                 );
                 removePiece();
                 addPiece(state, enemy);
