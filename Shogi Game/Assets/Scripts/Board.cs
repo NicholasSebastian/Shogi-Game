@@ -5,9 +5,10 @@ using UnityEngine;
 // Game Manager script.
 
 // TODO: Checkmate Detection: Check for overlap between king possible moves and enemy moves.
+// TODO: Add Death/GameEnd function; Call when King is dead or possible moves / no. of pieces = 0.
+
 // TODO: Piece Promotion.
 // TODO: Piece Face Textures.
-// TODO: Sounds.
 // TODO: UI.
 
 public class Board : MonoBehaviour
@@ -92,37 +93,6 @@ public class Board : MonoBehaviour
             else
                 yield return
                 StartCoroutine(EnemyControls());
-
-            GameCheck();
-        }
-    }
-
-    private void GameCheck()
-    {
-        int playerPieces = 0, enemyPieces = 0;
-        bool playerKing = false, enemyKing = false;
-
-        foreach (Tile tile in board)
-        {
-            if (tile.isEnemy()) enemyPieces++;
-            else playerPieces++;
-
-            if (tile.getState() == PieceType.King)
-            {
-                if (tile.isEnemy()) enemyKing = true;
-                else playerKing = true;
-            }
-        }
-
-        if (enemyPieces == 0 || enemyKing == false)
-        {
-            Debug.Log("PLAYER WINS");
-            game = false;
-        }
-        else if (playerPieces == 0 || playerKing == false)
-        {
-            Debug.Log("ENEMY WINS");
-            game = false;
         }
     }
 
