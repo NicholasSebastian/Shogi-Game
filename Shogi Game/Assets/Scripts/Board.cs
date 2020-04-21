@@ -19,6 +19,8 @@ public class Board : MonoBehaviour
     private bool game = true;
     private bool playersTurn = true;
 
+    private AudioSource boardSound;
+
     void Start()
     {
         initializeBoard();
@@ -36,6 +38,7 @@ public class Board : MonoBehaviour
             board[row, col] = tile;
             col++;
         }
+        boardSound = GetComponent<AudioSource>();
     }
 
     private void prepareBoard()
@@ -185,11 +188,6 @@ public class Board : MonoBehaviour
         {
             if (this.selectedTile)
             {
-                Debug.Log(
-                    this.selectedTile.getState() + " at " +
-                    this.selectedTile.name + " moving to " +
-                    targetTile.name
-                );
                 StartCoroutine(playerMovement(targetTile));
                 playersTurn = false;
             }
@@ -203,6 +201,7 @@ public class Board : MonoBehaviour
             this.selectedTile.StartCoroutine(
                 this.selectedTile.moveState(targetTile)
             );
+        boardSound.PlayOneShot(boardSound.clip);
         deselectPiece();
     }
 
@@ -238,15 +237,11 @@ public class Board : MonoBehaviour
                     possibleMoves[Random.Range(0, possibleMoves.Count - 1)]
                 );
                 Tile targetTile = board[targetMove[0], targetMove[1]];
-                Debug.Log(
-                    selectedEnemyTile.getState() + " at " +
-                    selectedEnemyTile.name + " moving to " +
-                    targetTile.name
-                );
                 yield return
                     selectedEnemyTile.StartCoroutine(
                         selectedEnemyTile.moveState(targetTile)
                     );
+                boardSound.PlayOneShot(boardSound.clip);
                 playersTurn = true;
             }
             else selectedEnemyTile.deselected();
