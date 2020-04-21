@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Game Manager script.
+
+// TODO: Checkmate Detection: Check for overlap between king possible moves and enemy moves.
 // TODO: Piece Promotion.
 // TODO: Piece Face Textures.
-// TODO: Checkmate Detection.
 // TODO: Sounds.
 // TODO: UI.
 
@@ -128,6 +129,7 @@ public class Board : MonoBehaviour
     private IEnumerator PlayerControls()
     {
         Debug.Log("Your Turn");
+        checkStatus();
         while (playersTurn)
         {
             if (Input.GetMouseButtonDown(0))
@@ -200,10 +202,35 @@ public class Board : MonoBehaviour
         deselectPiece();
     }
 
+    private void checkStatus()
+    {
+        // For all the possible targets of all player pieces present:
+        int c = 0;
+        foreach (Tile tile in board)
+        {
+            if (tile.getState() != PieceType.None && tile.isEnemy() == false)
+                foreach (int[] possibleMove in tile.getMoves(this.board))
+                {
+                    // Skip invalid moves / moves that lead to another player piece.
+                    int x = possibleMove[0], y = possibleMove[1];
+                    if (x < 0 || x >= boardSize || y < 0 || y >= boardSize || (
+                        board[x, y].getState() != PieceType.None &&
+                        board[x, y].isEnemy() == false
+                    )) continue;
+                    c++;
+                }
+        }
+        // Check if the player still has any valid moves.
+        Debug.Log("No. of Possible Player Moves: " + c);
+        if (c == 0)
+            Debug.Log("No possible moves... Enemy Checkmate?");
+    }
+
     private IEnumerator EnemyControls()
     {
         Debug.Log("Enemy's Turn");
         float startTime = Time.time;
+        yield return new WaitForSeconds(0.8f);
 
         while (playersTurn == false)
         {
@@ -211,54 +238,71 @@ public class Board : MonoBehaviour
                 Time.time - startTime < EnemyMinThinkTime ?
                 0.2f : 0.0f
             );
+            // Initialize lists for the different targets.
+            List<Tile[]> playerTargets = new List<Tile[]>();
+            List<Tile[]> spaceTargets = new List<Tile[]>();
 
-            // List all the enemy pieces on the board.
-            List<Tile> enemyTiles = new List<Tile>();
-            foreach (Tile tile in board)
-                if (tile.getState() != PieceType.None && tile.isEnemy())
-                    enemyTiles.Add(tile);
-
-            // Choose one of the pieces, preferably one that is placed closer to the front.
-            int forwardBiasedSelector = (
-                Random.value < enemyOffensiveLevel ?
-                Random.Range(0, Mathf.RoundToInt((enemyTiles.Count - 1) / 2)) :
-                Random.Range(Mathf.RoundToInt((enemyTiles.Count - 1) / 2), enemyTiles.Count - 1)
-            );
-            Tile selectedEnemyTile = enemyTiles[forwardBiasedSelector];
-
-            // List all the possible moves of this piece.
-            List<int[]> possibleMoves = selectedEnemyTile.getMoves(this.board);
-
-            // Remove all invalid moves.
-            for (int i = possibleMoves.Count - 1; i >= 0; i--)
+            // For all the possible targets of all enemy pieces present:
+            foreach (Tile currentTile in board)
             {
-                int[] possibleMove = possibleMoves[i];
-                int x = possibleMove[0], y = possibleMove[1];
-                if (x < 0 || x >= boardSize || y < 0 || y >= boardSize
-                    || board[x, y].isEnemy())
-                    possibleMoves.Remove(possibleMove);
+                if (currentTile.getState() != PieceType.None && currentTile.isEnemy())
+                    foreach (int[] possibleMove in currentTile.getMoves(this.board))
+                    {
+                        // Skip invalid moves / moves that lead to another enemy piece.
+                        int x = possibleMove[0], y = possibleMove[1];
+                        if (x < 0 || x >= boardSize || y < 0 || y >= boardSize
+                            || board[x, y].isEnemy()) continue;
+
+                        Tile targetTile = board[x, y];
+                        // If the target is the player's piece:
+                        if (targetTile.getState() != PieceType.None &&
+                            targetTile.isEnemy() == false)
+                        {
+                            // If the target is a king, then attack and stop checking.
+                            if (targetTile.getState() == PieceType.King)
+                            {
+                                yield return
+                                    currentTile.StartCoroutine(
+                                        currentTile.moveState(targetTile)
+                                    );
+                                boardSound.PlayOneShot(boardSound.clip);
+                                playersTurn = true;
+                                break;
+                            }
+                            // add to a list of playerTargets.
+                            else playerTargets.Add(new Tile[2] { currentTile, targetTile });
+                        }
+                        // If the target is empty, add to a list of spaceTargets.
+                        else if (targetTile.getState() == PieceType.None)
+                            spaceTargets.Add(new Tile[2] { currentTile, targetTile });
+                    }
+                if (playersTurn) break;
             }
 
-            // Proceed if it has valid moves, otherwise, go find another piece.
-            if (possibleMoves.Count > 0)
-            {
-                // Select a random move from this list.
-                int[] targetMove = possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
-                Tile targetTile = board[targetMove[0], targetMove[1]];
+            int c = playerTargets.Count + spaceTargets.Count;
+            Debug.Log("No. of Possible Enemy Moves: " + c);
 
-                // If it does not attack the player, high chance to have to find another piece.
-                if (!(targetTile.getState() != PieceType.None &&
-                    targetTile.isEnemy() == false))
-                    if (Random.value < enemyOffensiveLevel) continue;
+            Tile[] moveTarget = new Tile[2];
+            // If there is/are player piece(s) in range of attack, high chance to attack:
+            if (playerTargets.Count > 0 && Random.value < enemyOffensiveLevel)
+                moveTarget = playerTargets[Random.Range(0, playerTargets.Count - 1)];
 
-                // Execute the move, play the sound effect, and end the turn.
-                yield return
-                    selectedEnemyTile.StartCoroutine(
-                        selectedEnemyTile.moveState(targetTile)
-                    );
-                boardSound.PlayOneShot(boardSound.clip);
-                playersTurn = true;
-            }
+            // If there is/are empty space(s) in range of movement, move:
+            else if (spaceTargets.Count > 0)
+                moveTarget = spaceTargets[Random.Range(0, spaceTargets.Count - 1)];
+
+            // If player has no more possible moves.
+            else Debug.Log("No possible moves... Player Checkmate?");
+
+            // Finally execute the enemy's move.
+            Tile enemySelectedTile = moveTarget[0];
+            Tile enemyTargetedTile = moveTarget[1];
+            yield return
+                enemySelectedTile.StartCoroutine(
+                    enemySelectedTile.moveState(enemyTargetedTile)
+                );
+            boardSound.PlayOneShot(boardSound.clip);
+            playersTurn = true;
         }
     }
 }
