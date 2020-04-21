@@ -39,11 +39,6 @@ public class Piece : MonoBehaviour
         this.enemy = enemy;
     }
 
-    public List<int[]> selected(int row, int col, Tile[,] board)
-    {
-        return pieceMoves(row, col, board);
-    }
-
     public void raised()
     {
         transform.Translate(0, hoverHeight, 0);
@@ -69,13 +64,11 @@ public class Piece : MonoBehaviour
         }
     }
 
-    private List<int[]> pieceMoves(int row, int col, Tile[,] board)
+    public List<int[]> pieceMoves(int row, int col, Tile[,] board)
     {
         possibleMoves.Clear();
         switch (this.piece)
         {
-            // TODO: Make piece highlights not step on another
-
             case PieceType.Pawn:
                 possibleMoves.Add(new int[2] { row + 1, col });
                 break;
@@ -128,7 +121,29 @@ public class Piece : MonoBehaviour
             default:
                 break;
         }
-        return sideInverse(possibleMoves, row);
+        return
+            clearSpecificCollision(
+                sideInverse(possibleMoves, row),
+                board
+            );
+    }
+
+    private List<int[]> clearSpecificCollision(List<int[]> possibleMoves, Tile[,] board)
+    {
+        if (enemy == false)
+            for (int i = possibleMoves.Count - 1; i >= 0; i--)
+            {
+                int[] possibleMove = possibleMoves[i];
+                int x = possibleMove[0], y = possibleMove[1];
+                if (x >= 0 && x < Board.boardSize && y >= 0 && y < Board.boardSize)
+                {
+                    Tile checkedTile = board[x, y];
+                    if (checkedTile.getState() != PieceType.None &&
+                        checkedTile.isEnemy() == false)
+                        possibleMoves.Remove(possibleMove);
+                }
+            }
+        return possibleMoves;
     }
 
     private List<int[]> sideInverse(List<int[]> possibleMoves, int row)

@@ -68,6 +68,11 @@ public class Tile : MonoBehaviour
         );
     }
 
+    public List<int[]> getMoves(Tile[,] board)
+    {
+        return piece.pieceMoves(this.row, this.col, board);
+    }
+
     public void setState(PieceType state, bool enemy)
     {
         if (state == PieceType.None) removePiece();
@@ -158,11 +163,6 @@ public class Tile : MonoBehaviour
             Destroy(this.piece.gameObject);
             this.piece = null;
         }
-    }
-
-    public List<int[]> selected(Tile[,] board)
-    {
-        return piece.selected(this.row, this.col, board);
     }
 
     public void raised()

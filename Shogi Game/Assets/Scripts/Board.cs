@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Game Manager script.
-// TODO: Smarter Enemy AI, attack the player's piece if in range.
 // TODO: Piece Promotion.
 // TODO: Piece Face Textures.
 // TODO: Checkmate Detection.
@@ -160,7 +159,7 @@ public class Board : MonoBehaviour
     private void selectPiece()
     {
         this.selectedTile.raised();
-        foreach (int[] possibleMove in this.selectedTile.selected(this.board))
+        foreach (int[] possibleMove in this.selectedTile.getMoves(this.board))
         {
             int x = possibleMove[0], y = possibleMove[1];
             if (x >= 0 && x < boardSize && y >= 0 && y < boardSize)
@@ -205,23 +204,32 @@ public class Board : MonoBehaviour
     {
         Debug.Log("Enemy's Turn");
         float startTime = Time.time;
+
         while (playersTurn == false)
         {
             yield return new WaitForSeconds(
                 Time.time - startTime < EnemyMinThinkTime ?
                 0.2f : 0.0f
             );
+
+            // List all the enemy pieces on the board.
             List<Tile> enemyTiles = new List<Tile>();
             foreach (Tile tile in board)
                 if (tile.getState() != PieceType.None && tile.isEnemy())
                     enemyTiles.Add(tile);
+
+            // Choose one of the pieces, preferably one that is placed closer to the front.
             int forwardBiasedSelector = (
                 Random.value < enemyOffensiveLevel ?
                 Random.Range(0, Mathf.RoundToInt((enemyTiles.Count - 1) / 2)) :
                 Random.Range(Mathf.RoundToInt((enemyTiles.Count - 1) / 2), enemyTiles.Count - 1)
             );
             Tile selectedEnemyTile = enemyTiles[forwardBiasedSelector];
-            List<int[]> possibleMoves = selectedEnemyTile.selected(this.board);
+
+            // List all the possible moves of this piece.
+            List<int[]> possibleMoves = selectedEnemyTile.getMoves(this.board);
+
+            // Remove all invalid moves.
             for (int i = possibleMoves.Count - 1; i >= 0; i--)
             {
                 int[] possibleMove = possibleMoves[i];
@@ -230,17 +238,20 @@ public class Board : MonoBehaviour
                     || board[x, y].isEnemy())
                     possibleMoves.Remove(possibleMove);
             }
+
+            // Proceed if it has valid moves, otherwise, go find another piece.
             if (possibleMoves.Count > 0)
             {
-                int[] targetMove = (
-                    possibleMoves.Count == 1 ?
-                    possibleMoves[0] :
-                    possibleMoves[Random.Range(0, possibleMoves.Count - 1)]
-                );
+                // Select a random move from this list.
+                int[] targetMove = possibleMoves[Random.Range(0, possibleMoves.Count - 1)];
                 Tile targetTile = board[targetMove[0], targetMove[1]];
+
+                // If it does not attack the player, high chance to have to find another piece.
                 if (!(targetTile.getState() != PieceType.None &&
                     targetTile.isEnemy() == false))
                     if (Random.value < enemyOffensiveLevel) continue;
+
+                // Execute the move, play the sound effect, and end the turn.
                 yield return
                     selectedEnemyTile.StartCoroutine(
                         selectedEnemyTile.moveState(targetTile)
