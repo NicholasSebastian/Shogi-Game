@@ -73,13 +73,14 @@ public class Tile : MonoBehaviour
         if (state == PieceType.None) removePiece();
         else
         {
-            if (this.piece == null)
-            {
-                addPiece(state, enemy);
-            }
+            if (this.piece == null) addPiece(state, enemy);
             else
             {
-                Debug.Log("Replaced " + this.piece.getPiece() + " with " + state);
+                Debug.Log(
+                    (this.piece.isEnemy() ? "Player's " : "Enemy's ") + this.piece.getPiece()
+                    + " killed " +
+                    (this.piece.isEnemy() ? "Enemy's " : "Player's ") + state
+                );
                 removePiece();
                 addPiece(state, enemy);
             }

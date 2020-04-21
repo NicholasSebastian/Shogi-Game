@@ -87,49 +87,6 @@ public class Board : MonoBehaviour
         }
     }
 
-    private IEnumerator EnemyControls()
-    {
-        Debug.Log("Enemy's Turn");
-        while (playersTurn == false)
-        {
-            yield return new WaitForSeconds(0.2f);
-            List<Tile> enemyTiles = new List<Tile>();
-            foreach (Tile tile in board)
-                if (tile.getState() != PieceType.None && tile.isEnemy())
-                    enemyTiles.Add(tile);
-            Tile selectedEnemyTile = enemyTiles[Random.Range(0, enemyTiles.Count - 1)];
-            List<int[]> possibleMoves = selectedEnemyTile.selected(this.board);
-            for (int i = possibleMoves.Count - 1; i >= 0; i--)
-            {
-                int[] possibleMove = possibleMoves[i];
-                int x = possibleMove[0], y = possibleMove[1];
-                if (x < 0 || x >= boardSize || y < 0 || y >= boardSize
-                    || board[x, y].isEnemy())
-                    possibleMoves.Remove(possibleMove);
-            }
-            if (possibleMoves.Count > 0)
-            {
-                int[] targetMove = (
-                    possibleMoves.Count == 1 ?
-                    possibleMoves[0] :
-                    possibleMoves[Random.Range(0, possibleMoves.Count - 1)]
-                );
-                Tile targetTile = board[targetMove[0], targetMove[1]];
-                Debug.Log(
-                    selectedEnemyTile.getState() + " at " +
-                    selectedEnemyTile.name + " moving to " +
-                    targetTile.name
-                );
-                yield return
-                    selectedEnemyTile.StartCoroutine(
-                        selectedEnemyTile.moveState(targetTile)
-                    );
-                playersTurn = true;
-            }
-            else selectedEnemyTile.deselected();
-        }
-    }
-
     private IEnumerator PlayerControls()
     {
         Debug.Log("Your Turn");
@@ -201,19 +158,62 @@ public class Board : MonoBehaviour
                     this.selectedTile.name + " moving to " +
                     targetTile.name
                 );
-                StartCoroutine(movement(targetTile));
+                StartCoroutine(playerMovement(targetTile));
                 playersTurn = false;
             }
         }
         else deselectPiece();
     }
 
-    private IEnumerator movement(Tile targetTile)
+    private IEnumerator playerMovement(Tile targetTile)
     {
         yield return
             this.selectedTile.StartCoroutine(
                 this.selectedTile.moveState(targetTile)
             );
         deselectPiece();
+    }
+
+    private IEnumerator EnemyControls()
+    {
+        Debug.Log("Enemy's Turn");
+        while (playersTurn == false)
+        {
+            yield return new WaitForSeconds(0.2f);
+            List<Tile> enemyTiles = new List<Tile>();
+            foreach (Tile tile in board)
+                if (tile.getState() != PieceType.None && tile.isEnemy())
+                    enemyTiles.Add(tile);
+            Tile selectedEnemyTile = enemyTiles[Random.Range(0, enemyTiles.Count - 1)];
+            List<int[]> possibleMoves = selectedEnemyTile.selected(this.board);
+            for (int i = possibleMoves.Count - 1; i >= 0; i--)
+            {
+                int[] possibleMove = possibleMoves[i];
+                int x = possibleMove[0], y = possibleMove[1];
+                if (x < 0 || x >= boardSize || y < 0 || y >= boardSize
+                    || board[x, y].isEnemy())
+                    possibleMoves.Remove(possibleMove);
+            }
+            if (possibleMoves.Count > 0)
+            {
+                int[] targetMove = (
+                    possibleMoves.Count == 1 ?
+                    possibleMoves[0] :
+                    possibleMoves[Random.Range(0, possibleMoves.Count - 1)]
+                );
+                Tile targetTile = board[targetMove[0], targetMove[1]];
+                Debug.Log(
+                    selectedEnemyTile.getState() + " at " +
+                    selectedEnemyTile.name + " moving to " +
+                    targetTile.name
+                );
+                yield return
+                    selectedEnemyTile.StartCoroutine(
+                        selectedEnemyTile.moveState(targetTile)
+                    );
+                playersTurn = true;
+            }
+            else selectedEnemyTile.deselected();
+        }
     }
 }
