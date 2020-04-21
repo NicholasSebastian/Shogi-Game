@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Game Manager script.
+// TODO: Enemy turns.
+// TODO: Piece Promotion.
+// TODO: Sounds.
+// TODO: UI.
 
 public class Board : MonoBehaviour
 {
     public static readonly int boardSize = 9;
     private Tile[,] board = new Tile[boardSize, boardSize];
     private Tile selectedTile;
+    private bool playersTurn = true;
 
     void Start()
     {
@@ -18,7 +23,8 @@ public class Board : MonoBehaviour
 
     void Update()
     {
-        SelectionManager();
+        if (playersTurn)
+            SelectionManager();
     }
 
     private void initializeBoard()
@@ -26,11 +32,7 @@ public class Board : MonoBehaviour
         int row = 0, col = 0;
         foreach (Tile tile in GetComponentsInChildren<Tile>())
         {
-            if (col == boardSize)
-            {
-                row++;
-                col = 0;
-            }
+            if (col == boardSize) { row++; col = 0; }
             tile.setPosition(row, col);
             board[row, col] = tile;
             col++;
@@ -89,34 +91,19 @@ public class Board : MonoBehaviour
                 {
                     if (clickedTile.getState() != PieceType.None)
                     {
-                        if (clickedTile.getSide() == false)
+                        if (clickedTile.isEnemy() == false)
                         {
-                            if (this.selectedTile)
-                            {
-                                deselectPiece();
-                            }
+                            if (this.selectedTile) deselectPiece();
                             this.selectedTile = clickedTile;
                             selectPiece();
                         }
-                        else
-                        {
-                            movePiece(clickedTile);
-                        }
+                        else movePiece(clickedTile);
                     }
-                    else
-                    {
-                        movePiece(clickedTile);
-                    }
+                    else movePiece(clickedTile);
                 }
-                else
-                {
-                    deselectPiece();
-                }
+                else deselectPiece();
             }
-            else
-            {
-                deselectPiece();
-            }
+            else deselectPiece();
         }
     }
 
@@ -125,10 +112,9 @@ public class Board : MonoBehaviour
         foreach (int[] possibleMoves in this.selectedTile.selected(this.board))
         {
             if (possibleMoves[0] >= 0 && possibleMoves[0] < boardSize &&
-                possibleMoves[1] >= 0 && possibleMoves[1] < boardSize)
-            {
+                possibleMoves[1] >= 0 && possibleMoves[1] < boardSize
+            )
                 board[possibleMoves[0], possibleMoves[1]].highlightEnable();
-            }
         }
     }
 
@@ -138,11 +124,7 @@ public class Board : MonoBehaviour
         {
             this.selectedTile.deselected();
             this.selectedTile = null;
-
-            foreach (Tile tile in board)
-            {
-                tile.highlightDisable();
-            }
+            foreach (Tile tile in board) tile.highlightDisable();
         }
     }
 
@@ -150,15 +132,9 @@ public class Board : MonoBehaviour
     {
         if (targetTile.isHighlighted())
         {
-            if (this.selectedTile)
-            {
-                StartCoroutine(movement(targetTile));
-            }
+            if (this.selectedTile) StartCoroutine(movement(targetTile));
         }
-        else
-        {
-            deselectPiece();
-        }
+        else deselectPiece();
     }
 
     private IEnumerator movement(Tile targetTile)

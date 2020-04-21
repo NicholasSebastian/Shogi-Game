@@ -59,21 +59,18 @@ public class Tile : MonoBehaviour
         );
     }
 
-    public bool getSide()
+    public bool isEnemy()
     {
         return (
             this.piece != null ?
-            this.piece.getSide() :
+            this.piece.isEnemy() :
             false
         );
     }
 
     public void setState(PieceType state, bool enemy)
     {
-        if (state == PieceType.None)
-        {
-            removePiece();
-        }
+        if (state == PieceType.None) removePiece();
         else
         {
             if (this.piece == null)
@@ -147,10 +144,7 @@ public class Tile : MonoBehaviour
             default:
                 break;
         }
-        if (enemy)
-        {
-            this.piece.gameObject.transform.GetChild(0).Rotate(0, 180, 0, Space.Self);
-        }
+        if (enemy) this.piece.gameObject.transform.GetChild(0).Rotate(0, 180, 0, Space.Self);
         this.piece.setPiece(state);
         this.piece.setSide(enemy);
     }
@@ -171,10 +165,7 @@ public class Tile : MonoBehaviour
 
     public void deselected()
     {
-        if (this.piece)
-        {
-            piece.deselected();
-        }
+        if (this.piece) piece.deselected();
     }
 
     public void highlightEnable()

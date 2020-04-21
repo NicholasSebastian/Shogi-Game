@@ -29,7 +29,7 @@ public class Piece : MonoBehaviour
         this.piece = piece;
     }
 
-    public bool getSide()
+    public bool isEnemy()
     {
         return enemy;
     }
@@ -74,13 +74,6 @@ public class Piece : MonoBehaviour
                 possibleMoves.Add(new int[2] { row + 1, col });
                 break;
 
-            case PieceType.Lance:
-                for (int i = 1; i <= Board.boardSize; i++)
-                {
-                    possibleMoves.Add(new int[2] { row + i, col });
-                }
-                break;
-
             case PieceType.Knight:
                 possibleMoves.Add(new int[2] { row + 2, col - 1 });
                 possibleMoves.Add(new int[2] { row + 2, col + 1 });
@@ -114,6 +107,10 @@ public class Piece : MonoBehaviour
                 possibleMoves.Add(new int[2] { row - 1, col + 1 });
                 break;
 
+            case PieceType.Lance:
+                lanceMoves(row, col, board);
+                break;
+
             case PieceType.Bishop:
                 bishopMoves(row, col, board);
                 break;
@@ -128,16 +125,30 @@ public class Piece : MonoBehaviour
         return possibleMoves;
     }
 
+    private void lanceMoves(int row, int col, Tile[,] board)
+    {
+        for (int i = row + 1; i < Board.boardSize; i++)
+        {
+            if (board[i, col].getState() == PieceType.None ||
+                board[i, col].isEnemy())
+            {
+                possibleMoves.Add(new int[2] { i, col });
+                if (board[i, col].isEnemy()) break;
+            }
+            else break;
+        }
+    }
+
     private void bishopMoves(int row, int col, Tile[,] board)
     {
         for (int i = 1; i < Board.boardSize; i++)
         {
             if (row + i > 8 || col + i > 8) break;
             if (board[row + i, col + i].getState() == PieceType.None ||
-                board[row + i, col + i].getSide())
+                board[row + i, col + i].isEnemy())
             {
                 possibleMoves.Add(new int[2] { row + i, col + i });
-                if (board[row + i, col + i].getSide()) break;
+                if (board[row + i, col + i].isEnemy()) break;
             }
             else break;
         }
@@ -145,10 +156,10 @@ public class Piece : MonoBehaviour
         {
             if (row + i > 8 || col - i < 0) break;
             if (board[row + i, col - i].getState() == PieceType.None ||
-                board[row + i, col - i].getSide())
+                board[row + i, col - i].isEnemy())
             {
                 possibleMoves.Add(new int[2] { row + i, col - i });
-                if (board[row + i, col - i].getSide()) break;
+                if (board[row + i, col - i].isEnemy()) break;
             }
             else break;
         }
@@ -156,10 +167,10 @@ public class Piece : MonoBehaviour
         {
             if (row - i < 0 || col + i > 8) break;
             if (board[row - i, col + i].getState() == PieceType.None ||
-                board[row - i, col + i].getSide())
+                board[row - i, col + i].isEnemy())
             {
                 possibleMoves.Add(new int[2] { row - i, col + i });
-                if (board[row - i, col + i].getSide()) break;
+                if (board[row - i, col + i].isEnemy()) break;
             }
             else break;
         }
@@ -167,10 +178,10 @@ public class Piece : MonoBehaviour
         {
             if (row - i < 0 || col - i < 0) break;
             if (board[row - i, col - i].getState() == PieceType.None ||
-                board[row - i, col - i].getSide())
+                board[row - i, col - i].isEnemy())
             {
                 possibleMoves.Add(new int[2] { row - i, col - i });
-                if (board[row - i, col - i].getSide()) break;
+                if (board[row - i, col - i].isEnemy()) break;
             }
             else break;
         }
@@ -181,40 +192,40 @@ public class Piece : MonoBehaviour
         for (int i = row + 1; i < Board.boardSize; i++)
         {
             if (board[i, col].getState() == PieceType.None ||
-                board[i, col].getSide())
+                board[i, col].isEnemy())
             {
                 possibleMoves.Add(new int[2] { i, col });
-                if (board[i, col].getSide()) break;
+                if (board[i, col].isEnemy()) break;
             }
             else break;
         }
         for (int i = row - 1; i >= 0; i--)
         {
             if (board[i, col].getState() == PieceType.None ||
-                board[i, col].getSide())
+                board[i, col].isEnemy())
             {
                 possibleMoves.Add(new int[2] { i, col });
-                if (board[i, col].getSide()) break;
+                if (board[i, col].isEnemy()) break;
             }
             else break;
         }
         for (int i = col + 1; i < Board.boardSize; i++)
         {
             if (board[row, i].getState() == PieceType.None ||
-                board[row, i].getSide())
+                board[row, i].isEnemy())
             {
                 possibleMoves.Add(new int[2] { row, i });
-                if (board[row, i].getSide()) break;
+                if (board[row, i].isEnemy()) break;
             }
             else break;
         }
         for (int i = col - 1; i >= 0; i--)
         {
             if (board[row, i].getState() == PieceType.None ||
-                board[row, i].getSide())
+                board[row, i].isEnemy())
             {
                 possibleMoves.Add(new int[2] { row, i });
-                if (board[row, i].getSide()) break;
+                if (board[row, i].isEnemy()) break;
             }
             else break;
         }
