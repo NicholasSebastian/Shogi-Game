@@ -165,9 +165,16 @@ public class Tile : MonoBehaviour
         return piece.selected(this.row, this.col, board);
     }
 
+    public void raised()
+    {
+        if (this.piece)
+            this.piece.raised();
+    }
+
     public void deselected()
     {
-        if (this.piece) piece.deselected();
+        if (this.piece)
+            this.piece.deselected();
     }
 
     public void highlightEnable()

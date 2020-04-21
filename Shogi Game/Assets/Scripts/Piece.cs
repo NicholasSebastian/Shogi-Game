@@ -41,8 +41,12 @@ public class Piece : MonoBehaviour
 
     public List<int[]> selected(int row, int col, Tile[,] board)
     {
-        transform.Translate(0, hoverHeight, 0);
         return pieceMoves(row, col, board);
+    }
+
+    public void raised()
+    {
+        transform.Translate(0, hoverHeight, 0);
     }
 
     public void deselected()
@@ -70,6 +74,8 @@ public class Piece : MonoBehaviour
         possibleMoves.Clear();
         switch (this.piece)
         {
+            // TODO: Make piece highlights not step on another
+
             case PieceType.Pawn:
                 possibleMoves.Add(new int[2] { row + 1, col });
                 break;

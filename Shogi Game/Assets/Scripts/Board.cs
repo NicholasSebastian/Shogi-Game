@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Game Manager script.
+// TODO: Smarter Enemy AI, attack the player's piece if in range.
 // TODO: Piece Promotion.
 // TODO: Piece Face Textures.
 // TODO: Checkmate Detection.
@@ -11,15 +12,18 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    public static readonly int boardSize = 9;
+    private AudioSource boardSound;
 
+    public static readonly int boardSize = 9;
     private Tile[,] board = new Tile[boardSize, boardSize];
     private Tile selectedTile;
 
     private bool game = true;
     private bool playersTurn = true;
 
-    private AudioSource boardSound;
+    // The higher this value, the longer the load time.
+    public static float enemyOffensiveLevel = 0.8f;
+    public static float EnemyMinThinkTime = 2.0f;
 
     void Start()
     {
@@ -135,25 +139,16 @@ public class Board : MonoBehaviour
                 {
                     Transform clicked = hit.transform;
                     Tile clickedTile = clicked.GetComponent<Tile>();
-
                     if (clicked.CompareTag("Tile"))
-                    {
                         if (clickedTile.getState() != PieceType.None)
-                        {
-                            // Select if player's piece.
                             if (clickedTile.isEnemy() == false)
                             {
-                                // Swap selection if already holding a piece.
                                 if (this.selectedTile) deselectPiece();
                                 this.selectedTile = clickedTile;
                                 selectPiece();
                             }
-                            // Attack if enemy's piece.
                             else movePiece(clickedTile);
-                        }
-                        // Move if empty.
                         else movePiece(clickedTile);
-                    }
                     else deselectPiece();
                 }
                 else deselectPiece();
@@ -164,6 +159,7 @@ public class Board : MonoBehaviour
 
     private void selectPiece()
     {
+        this.selectedTile.raised();
         foreach (int[] possibleMove in this.selectedTile.selected(this.board))
         {
             int x = possibleMove[0], y = possibleMove[1];
@@ -208,18 +204,23 @@ public class Board : MonoBehaviour
     private IEnumerator EnemyControls()
     {
         Debug.Log("Enemy's Turn");
+        float startTime = Time.time;
         while (playersTurn == false)
         {
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(
+                Time.time - startTime < EnemyMinThinkTime ?
+                0.2f : 0.0f
+            );
             List<Tile> enemyTiles = new List<Tile>();
             foreach (Tile tile in board)
                 if (tile.getState() != PieceType.None && tile.isEnemy())
                     enemyTiles.Add(tile);
-            Tile selectedEnemyTile = enemyTiles[(
-                Random.value < 0.8f ?
+            int forwardBiasedSelector = (
+                Random.value < enemyOffensiveLevel ?
                 Random.Range(0, Mathf.RoundToInt((enemyTiles.Count - 1) / 2)) :
-                Random.Range(Mathf.RoundToInt((enemyTiles.Count - 1) / 2) + 1, enemyTiles.Count - 1)
-            )];
+                Random.Range(Mathf.RoundToInt((enemyTiles.Count - 1) / 2), enemyTiles.Count - 1)
+            );
+            Tile selectedEnemyTile = enemyTiles[forwardBiasedSelector];
             List<int[]> possibleMoves = selectedEnemyTile.selected(this.board);
             for (int i = possibleMoves.Count - 1; i >= 0; i--)
             {
@@ -237,6 +238,9 @@ public class Board : MonoBehaviour
                     possibleMoves[Random.Range(0, possibleMoves.Count - 1)]
                 );
                 Tile targetTile = board[targetMove[0], targetMove[1]];
+                if (!(targetTile.getState() != PieceType.None &&
+                    targetTile.isEnemy() == false))
+                    if (Random.value < enemyOffensiveLevel) continue;
                 yield return
                     selectedEnemyTile.StartCoroutine(
                         selectedEnemyTile.moveState(targetTile)
@@ -244,7 +248,6 @@ public class Board : MonoBehaviour
                 boardSound.PlayOneShot(boardSound.clip);
                 playersTurn = true;
             }
-            else selectedEnemyTile.deselected();
         }
     }
 }
