@@ -89,12 +89,13 @@ public class Tile : MonoBehaviour
     public IEnumerator moveState(Tile targetTile)
     {
         PieceType temp = this.piece.getPiece();
+        bool tempSide = this.piece.isEnemy();
         yield return
             this.piece.StartCoroutine(
                 this.piece.moveAnimation(targetTile.transform.position)
             );
         setState(PieceType.None, false);
-        targetTile.setState(temp, false);
+        targetTile.setState(temp, tempSide);
     }
 
     private void addPiece(PieceType state, bool enemy)

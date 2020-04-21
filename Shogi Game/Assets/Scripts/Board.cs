@@ -11,8 +11,10 @@ using UnityEngine;
 public class Board : MonoBehaviour
 {
     public static readonly int boardSize = 9;
+
     private Tile[,] board = new Tile[boardSize, boardSize];
     private Tile selectedTile;
+
     private bool game = true;
     private bool playersTurn = true;
 
@@ -90,13 +92,41 @@ public class Board : MonoBehaviour
         Debug.Log("Enemy's Turn");
         while (playersTurn == false)
         {
-            if (Random.value < 0.3f) Debug.Log("Thinking...");
-            else
+            yield return new WaitForSeconds(0.2f);
+            List<Tile> enemyTiles = new List<Tile>();
+            foreach (Tile tile in board)
+                if (tile.getState() != PieceType.None && tile.isEnemy())
+                    enemyTiles.Add(tile);
+            Tile selectedEnemyTile = enemyTiles[Random.Range(0, enemyTiles.Count - 1)];
+            List<int[]> possibleMoves = selectedEnemyTile.selected(this.board);
+            for (int i = possibleMoves.Count - 1; i >= 0; i--)
             {
-                Debug.Log("Pretend that enemy has moved.");
+                int[] possibleMove = possibleMoves[i];
+                int x = possibleMove[0], y = possibleMove[1];
+                if (x < 0 || x >= boardSize || y < 0 || y >= boardSize
+                    || board[x, y].isEnemy())
+                    possibleMoves.Remove(possibleMove);
+            }
+            if (possibleMoves.Count > 0)
+            {
+                int[] targetMove = (
+                    possibleMoves.Count == 1 ?
+                    possibleMoves[0] :
+                    possibleMoves[Random.Range(0, possibleMoves.Count - 1)]
+                );
+                Tile targetTile = board[targetMove[0], targetMove[1]];
+                Debug.Log(
+                    selectedEnemyTile.getState() + " at " +
+                    selectedEnemyTile.name + " moving to " +
+                    targetTile.name
+                );
+                yield return
+                    selectedEnemyTile.StartCoroutine(
+                        selectedEnemyTile.moveState(targetTile)
+                    );
                 playersTurn = true;
             }
-            yield return new WaitForSeconds(1.0f);
+            else selectedEnemyTile.deselected();
         }
     }
 
@@ -142,12 +172,11 @@ public class Board : MonoBehaviour
 
     private void selectPiece()
     {
-        foreach (int[] possibleMoves in this.selectedTile.selected(this.board))
+        foreach (int[] possibleMove in this.selectedTile.selected(this.board))
         {
-            if (possibleMoves[0] >= 0 && possibleMoves[0] < boardSize &&
-                possibleMoves[1] >= 0 && possibleMoves[1] < boardSize
-            )
-                board[possibleMoves[0], possibleMoves[1]].highlightEnable();
+            int x = possibleMove[0], y = possibleMove[1];
+            if (x >= 0 && x < boardSize && y >= 0 && y < boardSize)
+                board[x, y].highlightEnable();
         }
     }
 
@@ -167,6 +196,11 @@ public class Board : MonoBehaviour
         {
             if (this.selectedTile)
             {
+                Debug.Log(
+                    this.selectedTile.getState() + " at " +
+                    this.selectedTile.name + " moving to " +
+                    targetTile.name
+                );
                 StartCoroutine(movement(targetTile));
                 playersTurn = false;
             }

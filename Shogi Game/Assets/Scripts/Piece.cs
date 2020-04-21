@@ -122,6 +122,19 @@ public class Piece : MonoBehaviour
             default:
                 break;
         }
+        return sideInverse(possibleMoves, row);
+    }
+
+    private List<int[]> sideInverse(List<int[]> possibleMoves, int row)
+    {
+        if (enemy)
+            foreach (int[] possibleMove in possibleMoves)
+                if (possibleMove[0] != row)
+                    possibleMove[0] = (
+                        possibleMove[0] < row ?
+                        row + (row - possibleMove[0]) :
+                        row - (possibleMove[0] - row)
+                    );
         return possibleMoves;
     }
 

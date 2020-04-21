@@ -17,7 +17,7 @@ public class CameraMovement : MonoBehaviour
             targetPosition = new Vector3(
                 transform.position.x,
                 transform.position.y,
-                Mathf.Clamp(hit.point.z - 5.5f, -6.5f, -3.5f)
+                Mathf.Clamp(hit.point.z - 5.5f, -6.25f, -3.5f)
             );
         }
         transform.position = Vector3.Lerp(transform.position, targetPosition, speed);
