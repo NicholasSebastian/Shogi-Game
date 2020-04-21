@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Game Manager script.
-// TODO: Enemy turns.
+// TODO: Enemy Movement.
 // TODO: Piece Promotion.
 // TODO: Sounds.
 // TODO: UI.
@@ -13,18 +13,14 @@ public class Board : MonoBehaviour
     public static readonly int boardSize = 9;
     private Tile[,] board = new Tile[boardSize, boardSize];
     private Tile selectedTile;
+    private bool game = true;
     private bool playersTurn = true;
 
     void Start()
     {
         initializeBoard();
         prepareBoard();
-    }
-
-    void Update()
-    {
-        if (playersTurn)
-            SelectionManager();
+        StartCoroutine(GameLoop());
     }
 
     private void initializeBoard()
@@ -76,34 +72,71 @@ public class Board : MonoBehaviour
         board[8, 4].setState(PieceType.King, true);
     }
 
-    private void SelectionManager()
+    private IEnumerator GameLoop()
     {
-        if (Input.GetMouseButtonDown(0))
+        while (game)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                Transform clicked = hit.transform;
-                Tile clickedTile = clicked.GetComponent<Tile>();
+            if (playersTurn)
+                yield return
+                StartCoroutine(PlayerControls());
+            else
+                yield return
+                StartCoroutine(EnemyControls());
+        }
+    }
 
-                if (clicked.CompareTag("Tile"))
+    private IEnumerator EnemyControls()
+    {
+        Debug.Log("Enemy's Turn");
+        while (playersTurn == false)
+        {
+            if (Random.value < 0.3f) Debug.Log("Thinking...");
+            else
+            {
+                Debug.Log("Pretend that enemy has moved.");
+                playersTurn = true;
+            }
+            yield return new WaitForSeconds(1.0f);
+        }
+    }
+
+    private IEnumerator PlayerControls()
+    {
+        Debug.Log("Your Turn");
+        while (playersTurn)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                if (Physics.Raycast(ray, out hit))
                 {
-                    if (clickedTile.getState() != PieceType.None)
+                    Transform clicked = hit.transform;
+                    Tile clickedTile = clicked.GetComponent<Tile>();
+
+                    if (clicked.CompareTag("Tile"))
                     {
-                        if (clickedTile.isEnemy() == false)
+                        if (clickedTile.getState() != PieceType.None)
                         {
-                            if (this.selectedTile) deselectPiece();
-                            this.selectedTile = clickedTile;
-                            selectPiece();
+                            // Select if player's piece.
+                            if (clickedTile.isEnemy() == false)
+                            {
+                                // Swap selection if already holding a piece.
+                                if (this.selectedTile) deselectPiece();
+                                this.selectedTile = clickedTile;
+                                selectPiece();
+                            }
+                            // Attack if enemy's piece.
+                            else movePiece(clickedTile);
                         }
+                        // Move if empty.
                         else movePiece(clickedTile);
                     }
-                    else movePiece(clickedTile);
+                    else deselectPiece();
                 }
                 else deselectPiece();
             }
-            else deselectPiece();
+            yield return null;
         }
     }
 
@@ -132,7 +165,11 @@ public class Board : MonoBehaviour
     {
         if (targetTile.isHighlighted())
         {
-            if (this.selectedTile) StartCoroutine(movement(targetTile));
+            if (this.selectedTile)
+            {
+                StartCoroutine(movement(targetTile));
+                playersTurn = false;
+            }
         }
         else deselectPiece();
     }
