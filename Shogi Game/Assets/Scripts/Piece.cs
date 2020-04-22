@@ -4,8 +4,7 @@ using UnityEngine;
 
 public enum PieceType
 {
-    None,
-    Pawn, Bishop, Rook, Lance, Knight, Silver, Gold, King
+    None, Pawn, Bishop, Rook, Lance, Knight, Silver, Gold, King
 };
 
 public class Piece : MonoBehaviour

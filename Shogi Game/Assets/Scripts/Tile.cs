@@ -10,26 +10,8 @@ public class Tile : MonoBehaviour
 
     private GameObject highlight;
 
-    private GameObject pawnPrefab;
-    private GameObject bishopPrefab;
-    private GameObject rookPrefab;
-    private GameObject lancePrefab;
-    private GameObject knightPrefab;
-    private GameObject silverPrefab;
-    private GameObject goldPrefab;
-    private GameObject kingPrefab;
-
-    void Start()
+    void Awake()
     {
-        pawnPrefab = (GameObject)Resources.Load("Pawn");
-        bishopPrefab = (GameObject)Resources.Load("Bishop");
-        rookPrefab = (GameObject)Resources.Load("Rook");
-        lancePrefab = (GameObject)Resources.Load("Lance");
-        knightPrefab = (GameObject)Resources.Load("Knight");
-        silverPrefab = (GameObject)Resources.Load("Silver");
-        goldPrefab = (GameObject)Resources.Load("Gold");
-        kingPrefab = (GameObject)Resources.Load("King");
-
         highlight = transform.GetChild(1).gameObject;
         highlight.SetActive(false);
     }
@@ -100,42 +82,58 @@ public class Tile : MonoBehaviour
         {
             case PieceType.Pawn:
                 this.piece =
-                    Instantiate(pawnPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.pawnPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.Bishop:
                 this.piece =
-                    Instantiate(bishopPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.bishopPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.Rook:
                 this.piece =
-                    Instantiate(rookPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.rookPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.Lance:
                 this.piece =
-                    Instantiate(lancePrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.lancePrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.Knight:
                 this.piece =
-                    Instantiate(knightPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.knightPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.Silver:
                 this.piece =
-                    Instantiate(silverPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.silverPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.Gold:
                 this.piece =
-                    Instantiate(goldPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.goldPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             case PieceType.King:
                 this.piece =
-                    Instantiate(kingPrefab, transform.position, Quaternion.identity)
+                    Instantiate(
+                        GameController.kingPrefab,
+                        transform.position, Quaternion.identity)
                     .GetComponent<Piece>();
                 break;
             default:
@@ -150,6 +148,11 @@ public class Tile : MonoBehaviour
     {
         if (this.piece)
         {
+            if (this.piece.getPiece() == PieceType.King)
+                Debug.Log(this.piece.isEnemy() ?
+                "Enemy's King has been killed... Player Wins." :
+                "Player's King has been killed... Enemy Wins.");
+
             Destroy(this.piece.gameObject);
             this.piece = null;
         }
