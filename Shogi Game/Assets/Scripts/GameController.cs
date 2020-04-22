@@ -19,6 +19,8 @@ public class GameController : MonoBehaviour
     public static float enemyOffensiveLevel = 0.8f;
     public static float EnemyMinThinkTime = 2.0f;
 
+    private int turnCounter;
+
     private static GameObject boardPrefab;
     public static GameObject pawnPrefab;
     public static GameObject bishopPrefab;
@@ -48,6 +50,7 @@ public class GameController : MonoBehaviour
     {
         board = Instantiate(boardPrefab, new Vector3(0, 0, 0), Quaternion.Euler(0, 0, 0))
                 .GetComponent<Board>();
+        turnCounter = 0;
 
         if (multiplayer == false)
             StartCoroutine(GameLoop());
@@ -65,6 +68,7 @@ public class GameController : MonoBehaviour
             else
                 yield return
                 StartCoroutine(EnemyControls());
+            turnCounter++;
         }
     }
 
@@ -75,20 +79,34 @@ public class GameController : MonoBehaviour
         {
             case DeathType.Checkmate:
                 break;
+
             case DeathType.KingKilled:
+                Debug.Log(
+                    playersTurn ?
+                    "Enemy Wins! Player's King has been killed." :
+                    "Player Wins! Enemy's King has been killed."
+                );
                 break;
+
             case DeathType.NoMoves:
+                Debug.Log(
+                    playersTurn ?
+                    "Enemy Wins! Player has no possible moves." :
+                    "Player Wins! Enemy has no possible moves."
+                );
                 break;
+
             case DeathType.NoPieces:
+                Debug.Log(
+                    playersTurn ?
+                    "Enemy Wins! Player has no remaining pieces." :
+                    "Player Wins! Enemy has no remaining pieces."
+                );
                 break;
+
             default:
                 break;
         }
-    }
-
-    public static bool isPlayersTurn()
-    {
-        return playersTurn;
     }
 
     private IEnumerator PlayerControls()
@@ -128,7 +146,7 @@ public class GameController : MonoBehaviour
         float startTime = Time.time;
         yield return new WaitForSeconds(0.8f);
 
-        while (isPlayersTurn() == false)
+        while (playersTurn == false)
         {
             yield return new WaitForSeconds(
                 Time.time - startTime < EnemyMinThinkTime ?
@@ -137,6 +155,7 @@ public class GameController : MonoBehaviour
             // Initialize lists for the different targets.
             List<Tile[]> playerTargets = new List<Tile[]>();
             List<Tile[]> spaceTargets = new List<Tile[]>();
+            List<Tile[]> pawnSpaceTargets = new List<Tile[]>();
 
             int numberOfPieces = 0;
             // For all the possible targets of all enemy pieces present:
@@ -169,10 +188,14 @@ public class GameController : MonoBehaviour
                         }
                         // If the target is empty, add to a list of spaceTargets.
                         else if (targetTile.getState() == PieceType.None)
+                        {
                             spaceTargets.Add(new Tile[2] { currentTile, targetTile });
+                            if (currentTile.getState() == PieceType.Pawn)
+                                pawnSpaceTargets.Add(new Tile[2] { currentTile, targetTile });
+                        }
                     }
                 }
-                if (isPlayersTurn()) break;
+                if (game == false) break;
             }
             // If it turns out the enemy has no pieces, declare the loss.
             if (numberOfPieces == 0) endGame(DeathType.NoPieces);
@@ -184,7 +207,12 @@ public class GameController : MonoBehaviour
 
             // If there is/are empty space(s) in range of movement, move:
             else if (spaceTargets.Count > 0)
-                moveTarget = spaceTargets[Random.Range(0, spaceTargets.Count - 1)];
+                moveTarget = (
+                    turnCounter < enemyOffensiveLevel * 20 &&
+                    Random.value < enemyOffensiveLevel ?
+                    pawnSpaceTargets[Random.Range(0, pawnSpaceTargets.Count - 1)] :
+                    spaceTargets[Random.Range(0, spaceTargets.Count - 1)]
+                );
 
             // Else declare that there are no available moves and lose.
             else endGame(DeathType.NoMoves);
