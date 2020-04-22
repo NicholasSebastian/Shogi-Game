@@ -22,13 +22,31 @@ public class Tile : MonoBehaviour
         this.col = col;
     }
 
-    public PieceType getState()
+    public void raised()
     {
-        return (
-            this.piece != null ?
-            piece.getPiece() :
-            PieceType.None
-        );
+        if (this.piece)
+            this.piece.raised();
+    }
+
+    public void deselected()
+    {
+        if (this.piece)
+            this.piece.deselected();
+    }
+
+    public void highlightEnable()
+    {
+        highlight.SetActive(true);
+    }
+
+    public void highlightDisable()
+    {
+        highlight.SetActive(false);
+    }
+
+    public bool isHighlighted()
+    {
+        return highlight.activeSelf;
     }
 
     public bool isEnemy()
@@ -37,6 +55,15 @@ public class Tile : MonoBehaviour
             this.piece != null ?
             this.piece.isEnemy() :
             false
+        );
+    }
+
+    public PieceType getState()
+    {
+        return (
+            this.piece != null ?
+            this.piece.getPiece() :
+            PieceType.None
         );
     }
 
@@ -74,6 +101,7 @@ public class Tile : MonoBehaviour
             );
         setState(PieceType.None, false);
         targetTile.setState(temp, tempSide);
+        targetTile.checkPromotion();
     }
 
     private void addPiece(PieceType state, bool enemy)
@@ -153,30 +181,18 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public void raised()
+    private void checkPromotion()
     {
-        if (this.piece)
-            this.piece.raised();
-    }
+        if (this.piece.getPiece() == PieceType.King ||
+            this.piece.getPiece() == PieceType.Gold)
+            return;
 
-    public void deselected()
-    {
-        if (this.piece)
-            this.piece.deselected();
-    }
+        if (this.piece.isEnemy() == false &&
+            this.row >= Board.boardSize - 3)
+            this.piece.promotion();
 
-    public void highlightEnable()
-    {
-        highlight.SetActive(true);
-    }
-
-    public void highlightDisable()
-    {
-        highlight.SetActive(false);
-    }
-
-    public bool isHighlighted()
-    {
-        return highlight.activeSelf;
+        else if (this.piece.isEnemy() == true &&
+            this.row < 3)
+            this.piece.promotion();
     }
 }

@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    // TODO: Checkmate Detection: Check for overlap between possible king moves and enemy moves.
-    // - If all possible king moves are overlapped, checkmate. Else, move the king to avoid checkmate.
-
-    // TODO: Piece Promotion.
     // TODO: Piece Face Textures.
     // TODO: UI.
     // TODO: Add Japanese-style, Shamisen-like, Creative-Commons Background Music.
+
+    // TODO: Checkmate Detection: Check for overlap between possible king moves and enemy moves.
+    // - If all possible king moves are overlapped, checkmate. Else, move the king to avoid checkmate.
+    // TODO: Dropping???
 
     public static bool game = true;
     public static bool multiplayer = false;
@@ -72,7 +72,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void endGame(DeathType deathType)
+    private void endGame(DeathType deathType, bool playerWins)
     {
         game = false;
         switch (deathType)
@@ -82,25 +82,25 @@ public class GameController : MonoBehaviour
 
             case DeathType.KingKilled:
                 Debug.Log(
-                    playersTurn ?
-                    "Enemy Wins! Player's King has been killed." :
-                    "Player Wins! Enemy's King has been killed."
+                    playerWins ?
+                    "Player Wins! Enemy's King has been killed." :
+                    "Enemy Wins! Player's King has been killed."
                 );
                 break;
 
             case DeathType.NoMoves:
                 Debug.Log(
-                    playersTurn ?
-                    "Enemy Wins! Player has no possible moves." :
-                    "Player Wins! Enemy has no possible moves."
+                    playerWins ?
+                    "Player Wins! Enemy's King has been killed." :
+                    "Enemy Wins! Player's King has been killed."
                 );
                 break;
 
             case DeathType.NoPieces:
                 Debug.Log(
-                    playersTurn ?
-                    "Enemy Wins! Player has no remaining pieces." :
-                    "Player Wins! Enemy has no remaining pieces."
+                    playerWins ?
+                    "Player Wins! Enemy's King has been killed." :
+                    "Enemy Wins! Player's King has been killed."
                 );
                 break;
 
@@ -180,7 +180,7 @@ public class GameController : MonoBehaviour
                             if (targetTile.getState() == PieceType.King)
                             {
                                 yield return StartCoroutine(pieceMovement(currentTile, targetTile));
-                                endGame(DeathType.KingKilled);
+                                endGame(DeathType.KingKilled, false);
                                 break;
                             }
                             // add to a list of playerTargets.
@@ -198,7 +198,7 @@ public class GameController : MonoBehaviour
                 if (game == false) break;
             }
             // If it turns out the enemy has no pieces, declare the loss.
-            if (numberOfPieces == 0) endGame(DeathType.NoPieces);
+            if (numberOfPieces == 0) endGame(DeathType.NoPieces, true);
 
             Tile[] moveTarget = new Tile[2];
             // If there is/are player piece(s) in range of attack, high chance to attack:
@@ -215,7 +215,7 @@ public class GameController : MonoBehaviour
                 );
 
             // Else declare that there are no available moves and lose.
-            else endGame(DeathType.NoMoves);
+            else endGame(DeathType.NoMoves, true);
 
             // Finally execute the enemy's move.
             Tile enemySelectedTile = moveTarget[0];
@@ -253,7 +253,7 @@ public class GameController : MonoBehaviour
             {
                 StartCoroutine(pieceMovement(board.selectedTile, targetTile));
                 if (targetTile.getState() == PieceType.King)
-                    endGame(DeathType.KingKilled);
+                    endGame(DeathType.KingKilled, true);
             }
         }
         else deselectPiece();
@@ -293,8 +293,8 @@ public class GameController : MonoBehaviour
                 }
             }
         }
-        if (numberOfPieces == 0) endGame(DeathType.NoPieces);
-        if (numberOfMoves == 0) endGame(DeathType.NoMoves);
+        if (numberOfPieces == 0) endGame(DeathType.NoPieces, false);
+        if (numberOfMoves == 0) endGame(DeathType.NoMoves, false);
     }
 
     private enum DeathType

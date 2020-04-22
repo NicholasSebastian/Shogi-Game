@@ -16,8 +16,6 @@ public class Piece : MonoBehaviour
     private bool promoted = false;
     private bool enemy = false;
 
-    private List<int[]> possibleMoves = new List<int[]>();
-
     public PieceType getPiece()
     {
         return piece;
@@ -48,6 +46,11 @@ public class Piece : MonoBehaviour
         transform.Translate(0, -hoverHeight, 0);
     }
 
+    public void promotion()
+    {
+        this.promoted = true;
+    }
+
     public IEnumerator moveAnimation(Vector3 targetPosition)
     {
         Vector3 startPosition = transform.position;
@@ -65,61 +68,90 @@ public class Piece : MonoBehaviour
 
     public List<int[]> pieceMoves(int row, int col, Tile[,] board)
     {
-        possibleMoves.Clear();
-        switch (this.piece)
-        {
-            case PieceType.Pawn:
-                possibleMoves.Add(new int[2] { row + 1, col });
-                break;
+        List<int[]> possibleMoves = new List<int[]>();
+        if (promoted == false)
+            switch (this.piece)
+            {
+                case PieceType.Pawn:
+                    possibleMoves.Add(new int[2] { row + 1, col });
+                    break;
 
-            case PieceType.Knight:
-                possibleMoves.Add(new int[2] { row + 2, col - 1 });
-                possibleMoves.Add(new int[2] { row + 2, col + 1 });
-                break;
+                case PieceType.Knight:
+                    possibleMoves.Add(new int[2] { row + 2, col - 1 });
+                    possibleMoves.Add(new int[2] { row + 2, col + 1 });
+                    break;
 
-            case PieceType.Silver:
-                possibleMoves.Add(new int[2] { row + 1, col });
-                possibleMoves.Add(new int[2] { row + 1, col - 1 });
-                possibleMoves.Add(new int[2] { row + 1, col + 1 });
-                possibleMoves.Add(new int[2] { row - 1, col - 1 });
-                possibleMoves.Add(new int[2] { row - 1, col + 1 });
-                break;
+                case PieceType.Silver:
+                    possibleMoves.Add(new int[2] { row + 1, col });
+                    possibleMoves.Add(new int[2] { row + 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row + 1, col + 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col + 1 });
+                    break;
 
-            case PieceType.Gold:
-                possibleMoves.Add(new int[2] { row + 1, col });
-                possibleMoves.Add(new int[2] { row + 1, col - 1 });
-                possibleMoves.Add(new int[2] { row + 1, col + 1 });
-                possibleMoves.Add(new int[2] { row, col - 1 });
-                possibleMoves.Add(new int[2] { row, col + 1 });
-                possibleMoves.Add(new int[2] { row - 1, col });
-                break;
+                case PieceType.Gold:
+                    possibleMoves.Add(new int[2] { row + 1, col });
+                    possibleMoves.Add(new int[2] { row + 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row + 1, col + 1 });
+                    possibleMoves.Add(new int[2] { row, col - 1 });
+                    possibleMoves.Add(new int[2] { row, col + 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col });
+                    break;
 
-            case PieceType.King:
-                possibleMoves.Add(new int[2] { row + 1, col });
-                possibleMoves.Add(new int[2] { row - 1, col });
-                possibleMoves.Add(new int[2] { row, col - 1 });
-                possibleMoves.Add(new int[2] { row, col + 1 });
-                possibleMoves.Add(new int[2] { row + 1, col - 1 });
-                possibleMoves.Add(new int[2] { row + 1, col + 1 });
-                possibleMoves.Add(new int[2] { row - 1, col - 1 });
-                possibleMoves.Add(new int[2] { row - 1, col + 1 });
-                break;
+                case PieceType.King:
+                    possibleMoves.Add(new int[2] { row + 1, col });
+                    possibleMoves.Add(new int[2] { row - 1, col });
+                    possibleMoves.Add(new int[2] { row, col - 1 });
+                    possibleMoves.Add(new int[2] { row, col + 1 });
+                    possibleMoves.Add(new int[2] { row + 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row + 1, col + 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col + 1 });
+                    break;
 
-            case PieceType.Lance:
-                lanceMoves(row, col, board);
-                break;
+                case PieceType.Lance:
+                    lanceMoves(possibleMoves, row, col, board);
+                    break;
 
-            case PieceType.Bishop:
-                bishopMoves(row, col, board);
-                break;
+                case PieceType.Bishop:
+                    bishopMoves(possibleMoves, row, col, board);
+                    break;
 
-            case PieceType.Rook:
-                rookMoves(row, col, board);
-                break;
+                case PieceType.Rook:
+                    rookMoves(possibleMoves, row, col, board);
+                    break;
 
-            default:
-                break;
-        }
+                default:
+                    break;
+            }
+        else
+            switch (this.piece)
+            {
+                case PieceType.Bishop:
+                    bishopMoves(possibleMoves, row, col, board);
+                    possibleMoves.Add(new int[2] { row + 1, col });
+                    possibleMoves.Add(new int[2] { row, col - 1 });
+                    possibleMoves.Add(new int[2] { row, col + 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col });
+                    break;
+
+                case PieceType.Rook:
+                    rookMoves(possibleMoves, row, col, board);
+                    possibleMoves.Add(new int[2] { row + 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row + 1, col + 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col + 1 });
+                    break;
+
+                default:
+                    possibleMoves.Add(new int[2] { row + 1, col });
+                    possibleMoves.Add(new int[2] { row + 1, col - 1 });
+                    possibleMoves.Add(new int[2] { row + 1, col + 1 });
+                    possibleMoves.Add(new int[2] { row, col - 1 });
+                    possibleMoves.Add(new int[2] { row, col + 1 });
+                    possibleMoves.Add(new int[2] { row - 1, col });
+                    break;
+            }
         return
             clearSpecificCollision(
                 sideInverse(possibleMoves, row),
@@ -158,7 +190,7 @@ public class Piece : MonoBehaviour
         return possibleMoves;
     }
 
-    private void lanceMoves(int row, int col, Tile[,] board)
+    private void lanceMoves(List<int[]> possibleMoves, int row, int col, Tile[,] board)
     {
         for (int i = row + 1; i < Board.boardSize; i++)
         {
@@ -172,7 +204,7 @@ public class Piece : MonoBehaviour
         }
     }
 
-    private void bishopMoves(int row, int col, Tile[,] board)
+    private void bishopMoves(List<int[]> possibleMoves, int row, int col, Tile[,] board)
     {
         for (int i = 1; i < Board.boardSize; i++)
         {
@@ -220,7 +252,7 @@ public class Piece : MonoBehaviour
         }
     }
 
-    private void rookMoves(int row, int col, Tile[,] board)
+    private void rookMoves(List<int[]> possibleMoves, int row, int col, Tile[,] board)
     {
         for (int i = row + 1; i < Board.boardSize; i++)
         {
