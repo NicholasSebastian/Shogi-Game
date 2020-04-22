@@ -6,7 +6,6 @@ public class GameController : MonoBehaviour
 {
     // TODO: Checkmate Detection: Check for overlap between possible king moves and enemy moves.
     // - If all possible king moves are overlapped, checkmate. Else, move the king to avoid checkmate.
-    // - Add Death/GameEnd function; Call when King is dead or possible moves / no. of pieces = 0.
 
     // TODO: Piece Promotion.
     // TODO: Piece Face Textures.
@@ -69,29 +68,32 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void endGame(DeathType deathType)
+    {
+        game = false;
+        switch (deathType)
+        {
+            case DeathType.Checkmate:
+                break;
+            case DeathType.KingKilled:
+                break;
+            case DeathType.NoMoves:
+                break;
+            case DeathType.NoPieces:
+                break;
+            default:
+                break;
+        }
+    }
+
     public static bool isPlayersTurn()
     {
         return playersTurn;
     }
 
-    public static void endTurn()
-    {
-        playersTurn = !playersTurn;
-    }
-
-    public static void endGame(bool playerWin)
-    {
-        Debug.Log(
-            playerWin ?
-            "PLAYER WINS" :
-            "ENEMY WINS"
-        );
-    }
-
     private IEnumerator PlayerControls()
     {
-        Debug.Log("Your Turn");
-        board.checkStatus();
+        playerStatus();
         while (playersTurn)
         {
             if (Input.GetMouseButtonDown(0))
@@ -107,15 +109,15 @@ public class GameController : MonoBehaviour
                             if (clickedTile.isEnemy() == false)
                             {
                                 if (board.selectedTile)
-                                    board.deselectPiece();
+                                    deselectPiece();
                                 board.selectedTile = clickedTile;
-                                board.selectPiece();
+                                selectPiece();
                             }
-                            else board.movePiece(clickedTile);
-                        else board.movePiece(clickedTile);
-                    else board.deselectPiece();
+                            else movePiece(clickedTile);
+                        else movePiece(clickedTile);
+                    else deselectPiece();
                 }
-                else board.deselectPiece();
+                else deselectPiece();
             }
             yield return null;
         }
@@ -123,7 +125,6 @@ public class GameController : MonoBehaviour
 
     public IEnumerator EnemyControls()
     {
-        Debug.Log("Enemy's Turn");
         float startTime = Time.time;
         yield return new WaitForSeconds(0.8f);
 
@@ -137,10 +138,13 @@ public class GameController : MonoBehaviour
             List<Tile[]> playerTargets = new List<Tile[]>();
             List<Tile[]> spaceTargets = new List<Tile[]>();
 
+            int numberOfPieces = 0;
             // For all the possible targets of all enemy pieces present:
             foreach (Tile currentTile in board.board)
             {
                 if (currentTile.getState() != PieceType.None && currentTile.isEnemy())
+                {
+                    numberOfPieces++;
                     foreach (int[] possibleMove in currentTile.getMoves(board.board))
                     {
                         // Skip invalid moves / moves that lead to another enemy piece.
@@ -156,12 +160,8 @@ public class GameController : MonoBehaviour
                             // If the target is a king, then attack and stop checking.
                             if (targetTile.getState() == PieceType.King)
                             {
-                                yield return
-                                    currentTile.StartCoroutine(
-                                        currentTile.moveState(targetTile)
-                                    );
-                                board.boardSound.PlayOneShot(board.boardSound.clip);
-                                GameController.endTurn();
+                                yield return StartCoroutine(pieceMovement(currentTile, targetTile));
+                                endGame(DeathType.KingKilled);
                                 break;
                             }
                             // add to a list of playerTargets.
@@ -171,33 +171,106 @@ public class GameController : MonoBehaviour
                         else if (targetTile.getState() == PieceType.None)
                             spaceTargets.Add(new Tile[2] { currentTile, targetTile });
                     }
-                if (GameController.isPlayersTurn() == true) break;
+                }
+                if (isPlayersTurn()) break;
             }
-
-            int c = playerTargets.Count + spaceTargets.Count;
-            Debug.Log("No. of Possible Enemy Moves: " + c);
+            // If it turns out the enemy has no pieces, declare the loss.
+            if (numberOfPieces == 0) endGame(DeathType.NoPieces);
 
             Tile[] moveTarget = new Tile[2];
             // If there is/are player piece(s) in range of attack, high chance to attack:
-            if (playerTargets.Count > 0 && Random.value < GameController.enemyOffensiveLevel)
+            if (playerTargets.Count > 0 && Random.value < enemyOffensiveLevel)
                 moveTarget = playerTargets[Random.Range(0, playerTargets.Count - 1)];
 
             // If there is/are empty space(s) in range of movement, move:
             else if (spaceTargets.Count > 0)
                 moveTarget = spaceTargets[Random.Range(0, spaceTargets.Count - 1)];
 
-            // If player has no more possible moves.
-            else GameController.endGame(true);
+            // Else declare that there are no available moves and lose.
+            else endGame(DeathType.NoMoves);
 
             // Finally execute the enemy's move.
             Tile enemySelectedTile = moveTarget[0];
             Tile enemyTargetedTile = moveTarget[1];
-            yield return
-                enemySelectedTile.StartCoroutine(
-                    enemySelectedTile.moveState(enemyTargetedTile)
-                );
-            board.boardSound.PlayOneShot(board.boardSound.clip);
-            GameController.endTurn();
+            yield return StartCoroutine(pieceMovement(enemySelectedTile, enemyTargetedTile));
         }
     }
+
+    public void selectPiece()
+    {
+        board.selectedTile.raised();
+        foreach (int[] possibleMove in board.selectedTile.getMoves(board.board))
+        {
+            int x = possibleMove[0], y = possibleMove[1];
+            if (x >= 0 && x < Board.boardSize && y >= 0 && y < Board.boardSize)
+                board.board[x, y].highlightEnable();
+        }
+    }
+
+    public void deselectPiece()
+    {
+        if (board.selectedTile)
+        {
+            board.selectedTile.deselected();
+            board.selectedTile = null;
+            foreach (Tile tile in board.board) tile.highlightDisable();
+        }
+    }
+
+    public void movePiece(Tile targetTile)
+    {
+        if (targetTile.isHighlighted())
+        {
+            if (board.selectedTile)
+            {
+                StartCoroutine(pieceMovement(board.selectedTile, targetTile));
+                if (targetTile.getState() == PieceType.King)
+                    endGame(DeathType.KingKilled);
+            }
+        }
+        else deselectPiece();
+    }
+
+    private IEnumerator pieceMovement(Tile currentTile, Tile targetTile)
+    {
+        yield return
+            currentTile.StartCoroutine(
+                currentTile.moveState(targetTile)
+            );
+        board.boardSound.PlayOneShot(board.boardSound.clip);
+        if (playersTurn) deselectPiece();
+        playersTurn = !playersTurn;
+    }
+
+    public void playerStatus()
+    {
+        // For all the possible targets of all player pieces present:
+        int numberOfPieces = 0, numberOfMoves = 0;
+        foreach (Tile tile in board.board)
+        {
+            if (tile.getState() != PieceType.None && tile.isEnemy() == false)
+            {
+                numberOfPieces++;
+                foreach (int[] possibleMove in tile.getMoves(board.board))
+                {
+                    // Skip invalid moves / moves that lead to another fellow piece.
+                    int x = possibleMove[0], y = possibleMove[1];
+                    if (x < 0 || x >= Board.boardSize ||
+                        y < 0 || y >= Board.boardSize || (
+                        board.board[x, y].getState() != PieceType.None &&
+                        board.board[x, y].isEnemy() == false
+                        ))
+                        continue;
+                    numberOfMoves++;
+                }
+            }
+        }
+        if (numberOfPieces == 0) endGame(DeathType.NoPieces);
+        if (numberOfMoves == 0) endGame(DeathType.NoMoves);
+    }
+
+    private enum DeathType
+    {
+        Checkmate, KingKilled, NoMoves, NoPieces
+    };
 }

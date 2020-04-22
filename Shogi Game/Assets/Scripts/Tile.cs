@@ -148,11 +148,6 @@ public class Tile : MonoBehaviour
     {
         if (this.piece)
         {
-            if (this.piece.getPiece() == PieceType.King)
-                Debug.Log(this.piece.isEnemy() ?
-                "Enemy's King has been killed... Player Wins." :
-                "Player's King has been killed... Enemy Wins.");
-
             Destroy(this.piece.gameObject);
             this.piece = null;
         }
