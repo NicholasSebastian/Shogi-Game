@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    // TODO: Piece Face Textures.
     // TODO: UI.
-    // TODO: Add Japanese-style, Shamisen-like, Creative-Commons Background Music.
-
     // TODO: Checkmate Detection: Check for overlap between possible king moves and enemy moves.
     // - If all possible king moves are overlapped, checkmate. Else, move the king to avoid checkmate.
     // TODO: Dropping???
@@ -22,6 +19,7 @@ public class GameController : MonoBehaviour
     private int turnCounter;
 
     private static GameObject boardPrefab;
+    public static GameObject facePrefab;
     public static GameObject pawnPrefab;
     public static GameObject bishopPrefab;
     public static GameObject rookPrefab;
@@ -36,6 +34,7 @@ public class GameController : MonoBehaviour
     void Awake()
     {
         boardPrefab = (GameObject)Resources.Load("Board");
+        facePrefab = (GameObject)Resources.Load("Face");
         pawnPrefab = (GameObject)Resources.Load("Pawn");
         bishopPrefab = (GameObject)Resources.Load("Bishop");
         rookPrefab = (GameObject)Resources.Load("Rook");

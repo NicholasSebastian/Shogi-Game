@@ -167,9 +167,11 @@ public class Tile : MonoBehaviour
             default:
                 break;
         }
-        if (enemy) this.piece.gameObject.transform.GetChild(0).Rotate(0, 180, 0, Space.Self);
-        this.piece.setPiece(state);
+        if (enemy)
+            this.piece.gameObject.transform.GetChild(0)
+            .Rotate(0, 180, 0, Space.World);
         this.piece.setSide(enemy);
+        this.piece.setPiece(state);
     }
 
     private void removePiece()

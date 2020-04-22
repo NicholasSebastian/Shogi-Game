@@ -12,9 +12,18 @@ public class Piece : MonoBehaviour
     private static readonly float hoverHeight = 0.3f;
     private static readonly float movementSpeed = 10.0f;
 
+    private TextMesh characterFace;
+
     private PieceType piece = PieceType.None;
     private bool promoted = false;
     private bool enemy = false;
+
+    void Awake()
+    {
+        characterFace = Instantiate(
+            GameController.facePrefab, this.transform)
+            .GetComponent<TextMesh>();
+    }
 
     public PieceType getPiece()
     {
@@ -24,6 +33,43 @@ public class Piece : MonoBehaviour
     public void setPiece(PieceType piece)
     {
         this.piece = piece;
+        switch (piece)
+        {
+            case PieceType.Pawn:
+                characterFace.text = "歩";
+                break;
+
+            case PieceType.Lance:
+                characterFace.text = "香";
+                break;
+
+            case PieceType.Knight:
+                characterFace.text = "桂";
+                break;
+
+            case PieceType.Bishop:
+                characterFace.text = "角";
+                break;
+
+            case PieceType.Rook:
+                characterFace.text = "飛";
+                break;
+
+            case PieceType.Silver:
+                characterFace.text = "銀";
+                break;
+
+            case PieceType.Gold:
+                characterFace.text = "金";
+                break;
+
+            case PieceType.King:
+                characterFace.text = (enemy ? "王" : "玉");
+                break;
+
+            default:
+                break;
+        }
     }
 
     public bool isEnemy()
@@ -34,6 +80,8 @@ public class Piece : MonoBehaviour
     public void setSide(bool enemy)
     {
         this.enemy = enemy;
+        if (enemy)
+            characterFace.transform.Rotate(0, 180, 0, Space.World);
     }
 
     public void raised()
