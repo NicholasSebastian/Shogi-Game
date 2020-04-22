@@ -10,7 +10,7 @@ public class Tile : MonoBehaviour
 
     private GameObject highlight;
 
-    void Awake()
+    void Start()
     {
         highlight = transform.GetChild(1).gameObject;
         highlight.SetActive(false);
@@ -186,7 +186,8 @@ public class Tile : MonoBehaviour
     private void checkPromotion()
     {
         if (this.piece.getPiece() == PieceType.King ||
-            this.piece.getPiece() == PieceType.Gold)
+            this.piece.getPiece() == PieceType.Gold ||
+            this.piece.isPromoted())
             return;
 
         if (this.piece.isEnemy() == false &&

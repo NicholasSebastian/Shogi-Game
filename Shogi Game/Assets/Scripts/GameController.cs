@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
+    // TODO: Fix Promotion after Promotion problem.
     // TODO: UI.
     // TODO: Checkmate Detection: Check for overlap between possible king moves and enemy moves.
     // - If all possible king moves are overlapped, checkmate. Else, move the king to avoid checkmate.

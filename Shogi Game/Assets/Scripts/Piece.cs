@@ -11,18 +11,20 @@ public class Piece : MonoBehaviour
 {
     private static readonly float hoverHeight = 0.3f;
     private static readonly float movementSpeed = 10.0f;
+    private static readonly float turnSpeed = 15.0f;
 
     private TextMesh characterFace;
 
     private PieceType piece = PieceType.None;
-    private bool promoted = false;
-    private bool enemy = false;
+    private bool promoted;
+    private bool enemy;
 
     void Awake()
     {
         characterFace = Instantiate(
             GameController.facePrefab, this.transform)
             .GetComponent<TextMesh>();
+        promoted = false;
     }
 
     public PieceType getPiece()
@@ -72,16 +74,21 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public bool isEnemy()
-    {
-        return enemy;
-    }
-
     public void setSide(bool enemy)
     {
         this.enemy = enemy;
         if (enemy)
             characterFace.transform.Rotate(0, 180, 0, Space.World);
+    }
+
+    public bool isEnemy()
+    {
+        return enemy;
+    }
+
+    public bool isPromoted()
+    {
+        return promoted;
     }
 
     public void raised()
@@ -97,6 +104,9 @@ public class Piece : MonoBehaviour
     public void promotion()
     {
         this.promoted = true;
+        characterFace.text = "";
+        StartCoroutine(flipAnimation());
+        characterFace.color = Color.red;
     }
 
     public IEnumerator moveAnimation(Vector3 targetPosition)
@@ -111,6 +121,44 @@ public class Piece : MonoBehaviour
                 startPosition, targetPosition, i
             );
             yield return null;
+        }
+    }
+
+    private IEnumerator flipAnimation()
+    {
+        for (int i = 0; i < (180 / turnSpeed); i++)
+        {
+            transform.GetChild(0).Rotate(Vector3.forward, turnSpeed);
+            yield return null;
+        }
+        switch (piece)
+        {
+            case PieceType.Pawn:
+                characterFace.text = "と";
+                break;
+
+            case PieceType.Lance:
+                characterFace.text = "杏";
+                break;
+
+            case PieceType.Knight:
+                characterFace.text = "圭";
+                break;
+
+            case PieceType.Bishop:
+                characterFace.text = "馬";
+                break;
+
+            case PieceType.Rook:
+                characterFace.text = "龍";
+                break;
+
+            case PieceType.Silver:
+                characterFace.text = "全";
+                break;
+
+            default:
+                break;
         }
     }
 
