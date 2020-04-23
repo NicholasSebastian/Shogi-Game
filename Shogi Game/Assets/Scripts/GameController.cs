@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    // TODO: Remove all the extra prefabs for every piece. Just use one.
     // TODO: UI.
-    // TODO: Checkmate Detection: Check for overlap between possible king moves and enemy moves.
-    // - If all possible king moves are overlapped, checkmate. Else, move the king to avoid checkmate.
     // TODO: Dropping???
 
     public static bool game = true;
@@ -18,6 +15,10 @@ public class GameController : MonoBehaviour
     public static float EnemyMinThinkTime = 2.0f;
 
     private int turnCounter;
+    List<int[]> validMoves = new List<int[]>();
+    List<int[]> validKingMoves = new List<int[]>();
+    List<int[]> validEnemyMoves = new List<int[]>();
+    List<int[]> validEnemyKingMoves = new List<int[]>();
 
     private static GameObject boardPrefab;
     public static GameObject facePrefab;
@@ -64,6 +65,11 @@ public class GameController : MonoBehaviour
         switch (deathType)
         {
             case DeathType.Checkmate:
+                Debug.Log(
+                    playerWins ?
+                    "Player Wins! Enemy has been checkmated." :
+                    "Enemy Wins! Player has been checkmated."
+                );
                 break;
 
             case DeathType.KingKilled:
@@ -77,16 +83,16 @@ public class GameController : MonoBehaviour
             case DeathType.NoMoves:
                 Debug.Log(
                     playerWins ?
-                    "Player Wins! Enemy's King has been killed." :
-                    "Enemy Wins! Player's King has been killed."
+                    "Player Wins! Enemy has no valid moves left." :
+                    "Enemy Wins! Player has no valid moves left."
                 );
                 break;
 
             case DeathType.NoPieces:
                 Debug.Log(
                     playerWins ?
-                    "Player Wins! Enemy's King has been killed." :
-                    "Enemy Wins! Player's King has been killed."
+                    "Player Wins! Enemy has no pieces remaining." :
+                    "Enemy Wins! Player has no pieces remaining."
                 );
                 break;
 
@@ -144,6 +150,7 @@ public class GameController : MonoBehaviour
             List<Tile[]> pawnSpaceTargets = new List<Tile[]>();
 
             int numberOfPieces = 0;
+            bool kingInDanger = false;
             // For all the possible targets of all enemy pieces present:
             foreach (Tile currentTile in board.board)
             {
@@ -156,6 +163,11 @@ public class GameController : MonoBehaviour
                         int x = possibleMove[0], y = possibleMove[1];
                         if (x < 0 || x >= Board.boardSize || y < 0 || y >= Board.boardSize
                             || board.board[x, y].isEnemy()) continue;
+
+                        // Add these moves to a list for checkmate checking later.
+                        this.validEnemyMoves.Add(possibleMove);
+                        if (currentTile.getState() == PieceType.King)
+                            this.validEnemyKingMoves.Add(possibleMove);
 
                         Tile targetTile = board.board[x, y];
                         // If the target is the player's piece:
@@ -180,6 +192,15 @@ public class GameController : MonoBehaviour
                                 pawnSpaceTargets.Add(new Tile[2] { currentTile, targetTile });
                         }
                     }
+
+                    // If the piece is a king, and it is in range of enemy's attack, then move.
+                    if (currentTile.getState() == PieceType.King)
+                        foreach (int[] possiblePlayerMove in this.validMoves)
+                        {
+                            if (currentTile.getRow() == possiblePlayerMove[0] &&
+                                currentTile.getCol() == possiblePlayerMove[1])
+                                kingInDanger = true;
+                        }
                 }
                 if (game == false) break;
             }
@@ -187,8 +208,22 @@ public class GameController : MonoBehaviour
             if (numberOfPieces == 0) endGame(DeathType.NoPieces, true);
 
             Tile[] moveTarget = new Tile[2];
+            // If the king is within range of the player's attack, move the king.
+            if (kingInDanger)
+                moveTarget = (
+                    playerTargets.Count > 0 ?
+                    playerTargets[
+                        playerTargets.FindIndex(
+                        x => x[0].getState() == PieceType.King
+                    )] :
+                    spaceTargets[
+                        spaceTargets.FindIndex(
+                        x => x[0].getState() == PieceType.King
+                    )]
+                );
+
             // If there is/are player piece(s) in range of attack, high chance to attack:
-            if (playerTargets.Count > 0 && Random.value < enemyOffensiveLevel)
+            else if (playerTargets.Count > 0 && Random.value < enemyOffensiveLevel)
                 moveTarget = playerTargets[Random.Range(0, playerTargets.Count - 1)];
 
             // If there is/are empty space(s) in range of movement, move:
@@ -202,6 +237,9 @@ public class GameController : MonoBehaviour
 
             // Else declare that there are no available moves and lose.
             else endGame(DeathType.NoMoves, true);
+
+            // Check if the enemy has been checkmated.
+            checkmateStatus(this.validEnemyKingMoves, this.validMoves, true);
 
             // Finally execute the enemy's move.
             Tile enemySelectedTile = moveTarget[0];
@@ -259,7 +297,9 @@ public class GameController : MonoBehaviour
     public void playerStatus()
     {
         // For all the possible targets of all player pieces present:
-        int numberOfPieces = 0, numberOfMoves = 0;
+        int numberOfPieces = 0;
+        validMoves.Clear();
+        validKingMoves.Clear();
         foreach (Tile tile in board.board)
         {
             if (tile.getState() != PieceType.None && tile.isEnemy() == false)
@@ -275,12 +315,31 @@ public class GameController : MonoBehaviour
                         board.board[x, y].isEnemy() == false
                         ))
                         continue;
-                    numberOfMoves++;
+                    this.validMoves.Add(possibleMove);
+                    if (tile.getState() == PieceType.King)
+                        this.validKingMoves.Add(possibleMove);
                 }
             }
         }
         if (numberOfPieces == 0) endGame(DeathType.NoPieces, false);
-        if (numberOfMoves == 0) endGame(DeathType.NoMoves, false);
+        if (validMoves.Count == 0) endGame(DeathType.NoMoves, false);
+        checkmateStatus(this.validKingMoves, this.validEnemyMoves, false);
+    }
+
+    private void checkmateStatus(List<int[]> currentKingMoves, List<int[]> allEnemyMoves, bool enemyTurn)
+    {
+        int overlapCount = 0;
+        foreach (int[] currentKingMove in currentKingMoves)
+        {
+            foreach (int[] allEnemyMove in allEnemyMoves)
+                if (currentKingMove[0] == allEnemyMove[0] &&
+                    currentKingMove[1] == allEnemyMove[1])
+                {
+                    overlapCount++;
+                    break;
+                }
+        }
+        if (overlapCount == currentKingMoves.Count) endGame(DeathType.Checkmate, enemyTurn);
     }
 
     private enum DeathType
