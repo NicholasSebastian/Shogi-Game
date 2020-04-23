@@ -107,67 +107,10 @@ public class Tile : MonoBehaviour
 
     private void addPiece(PieceType state, bool enemy, bool promoted)
     {
-        switch (state)
-        {
-            case PieceType.Pawn:
-                this.piece =
-                    Instantiate(
-                        GameController.pawnPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.Bishop:
-                this.piece =
-                    Instantiate(
-                        GameController.bishopPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.Rook:
-                this.piece =
-                    Instantiate(
-                        GameController.rookPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.Lance:
-                this.piece =
-                    Instantiate(
-                        GameController.lancePrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.Knight:
-                this.piece =
-                    Instantiate(
-                        GameController.knightPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.Silver:
-                this.piece =
-                    Instantiate(
-                        GameController.silverPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.Gold:
-                this.piece =
-                    Instantiate(
-                        GameController.goldPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            case PieceType.King:
-                this.piece =
-                    Instantiate(
-                        GameController.kingPrefab,
-                        transform.position, Quaternion.identity)
-                    .GetComponent<Piece>();
-                break;
-            default:
-                break;
-        }
+        this.piece = Instantiate(
+            GameController.piecePrefab,
+            transform.position, Quaternion.identity)
+            .GetComponent<Piece>();
         if (enemy)
             this.piece.gameObject.transform.GetChild(0)
             .Rotate(0, 180, 0, Space.World);

@@ -21,14 +21,7 @@ public class GameController : MonoBehaviour
 
     private static GameObject boardPrefab;
     public static GameObject facePrefab;
-    public static GameObject pawnPrefab;
-    public static GameObject bishopPrefab;
-    public static GameObject rookPrefab;
-    public static GameObject lancePrefab;
-    public static GameObject knightPrefab;
-    public static GameObject silverPrefab;
-    public static GameObject goldPrefab;
-    public static GameObject kingPrefab;
+    public static GameObject piecePrefab;
 
     private Board board;
 
@@ -36,14 +29,7 @@ public class GameController : MonoBehaviour
     {
         boardPrefab = (GameObject)Resources.Load("Board");
         facePrefab = (GameObject)Resources.Load("Face");
-        pawnPrefab = (GameObject)Resources.Load("Pawn");
-        bishopPrefab = (GameObject)Resources.Load("Bishop");
-        rookPrefab = (GameObject)Resources.Load("Rook");
-        lancePrefab = (GameObject)Resources.Load("Lance");
-        knightPrefab = (GameObject)Resources.Load("Knight");
-        silverPrefab = (GameObject)Resources.Load("Silver");
-        goldPrefab = (GameObject)Resources.Load("Gold");
-        kingPrefab = (GameObject)Resources.Load("King");
+        piecePrefab = (GameObject)Resources.Load("Piece");
     }
 
     void Start()
