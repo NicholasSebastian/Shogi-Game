@@ -72,12 +72,12 @@ public class Tile : MonoBehaviour
         return piece.pieceMoves(this.row, this.col, board);
     }
 
-    public void setState(PieceType state, bool enemy)
+    public void setState(PieceType state, bool enemy, bool promoted)
     {
         if (state == PieceType.None) removePiece();
         else
         {
-            if (this.piece == null) addPiece(state, enemy);
+            if (this.piece == null) addPiece(state, enemy, promoted);
             else
             {
                 Debug.Log(
@@ -86,7 +86,7 @@ public class Tile : MonoBehaviour
                     (this.piece.isEnemy() ? "Enemy's " : "Player's ") + this.piece.getPiece()
                 );
                 removePiece();
-                addPiece(state, enemy);
+                addPiece(state, enemy, promoted);
             }
         }
     }
@@ -95,16 +95,17 @@ public class Tile : MonoBehaviour
     {
         PieceType temp = this.piece.getPiece();
         bool tempSide = this.piece.isEnemy();
+        bool tempStance = this.piece.isPromoted();
         yield return
             this.piece.StartCoroutine(
                 this.piece.moveAnimation(targetTile.transform.position)
             );
-        setState(PieceType.None, false);
-        targetTile.setState(temp, tempSide);
+        setState(PieceType.None, false, false);
+        targetTile.setState(temp, tempSide, tempStance);
         targetTile.checkPromotion();
     }
 
-    private void addPiece(PieceType state, bool enemy)
+    private void addPiece(PieceType state, bool enemy, bool promoted)
     {
         switch (state)
         {
@@ -170,8 +171,7 @@ public class Tile : MonoBehaviour
         if (enemy)
             this.piece.gameObject.transform.GetChild(0)
             .Rotate(0, 180, 0, Space.World);
-        this.piece.setSide(enemy);
-        this.piece.setPiece(state);
+        this.piece.setPiece(state, enemy, promoted);
     }
 
     private void removePiece()

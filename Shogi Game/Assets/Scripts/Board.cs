@@ -34,35 +34,35 @@ public class Board : MonoBehaviour
         // Prepare the player's side.
         for (int i = 0; i < boardSize; i++)
         {
-            board[2, i].setState(PieceType.Pawn, false);
+            board[2, i].setState(PieceType.Pawn, false, false);
         }
-        board[1, 1].setState(PieceType.Bishop, false);
-        board[1, 7].setState(PieceType.Rook, false);
-        board[0, 0].setState(PieceType.Lance, false);
-        board[0, 8].setState(PieceType.Lance, false);
-        board[0, 1].setState(PieceType.Knight, false);
-        board[0, 7].setState(PieceType.Knight, false);
-        board[0, 2].setState(PieceType.Silver, false);
-        board[0, 6].setState(PieceType.Silver, false);
-        board[0, 3].setState(PieceType.Gold, false);
-        board[0, 5].setState(PieceType.Gold, false);
-        board[0, 4].setState(PieceType.King, false);
+        board[1, 1].setState(PieceType.Bishop, false, false);
+        board[1, 7].setState(PieceType.Rook, false, false);
+        board[0, 0].setState(PieceType.Lance, false, false);
+        board[0, 8].setState(PieceType.Lance, false, false);
+        board[0, 1].setState(PieceType.Knight, false, false);
+        board[0, 7].setState(PieceType.Knight, false, false);
+        board[0, 2].setState(PieceType.Silver, false, false);
+        board[0, 6].setState(PieceType.Silver, false, false);
+        board[0, 3].setState(PieceType.Gold, false, false);
+        board[0, 5].setState(PieceType.Gold, false, false);
+        board[0, 4].setState(PieceType.King, false, false);
 
         // Prepare the enemy's side.
         for (int i = 0; i < boardSize; i++)
         {
-            board[6, i].setState(PieceType.Pawn, true);
+            board[6, i].setState(PieceType.Pawn, true, false);
         }
-        board[7, 7].setState(PieceType.Bishop, true);
-        board[7, 1].setState(PieceType.Rook, true);
-        board[8, 8].setState(PieceType.Lance, true);
-        board[8, 0].setState(PieceType.Lance, true);
-        board[8, 7].setState(PieceType.Knight, true);
-        board[8, 1].setState(PieceType.Knight, true);
-        board[8, 6].setState(PieceType.Silver, true);
-        board[8, 2].setState(PieceType.Silver, true);
-        board[8, 5].setState(PieceType.Gold, true);
-        board[8, 3].setState(PieceType.Gold, true);
-        board[8, 4].setState(PieceType.King, true);
+        board[7, 7].setState(PieceType.Bishop, true, false);
+        board[7, 1].setState(PieceType.Rook, true, false);
+        board[8, 8].setState(PieceType.Lance, true, false);
+        board[8, 0].setState(PieceType.Lance, true, false);
+        board[8, 7].setState(PieceType.Knight, true, false);
+        board[8, 1].setState(PieceType.Knight, true, false);
+        board[8, 6].setState(PieceType.Silver, true, false);
+        board[8, 2].setState(PieceType.Silver, true, false);
+        board[8, 5].setState(PieceType.Gold, true, false);
+        board[8, 3].setState(PieceType.Gold, true, false);
+        board[8, 4].setState(PieceType.King, true, false);
     }
 }

@@ -24,61 +24,21 @@ public class Piece : MonoBehaviour
         characterFace = Instantiate(
             GameController.facePrefab, this.transform)
             .GetComponent<TextMesh>();
-        promoted = false;
+    }
+
+    public void raised()
+    {
+        transform.Translate(0, hoverHeight, 0);
+    }
+
+    public void deselected()
+    {
+        transform.Translate(0, -hoverHeight, 0);
     }
 
     public PieceType getPiece()
     {
         return piece;
-    }
-
-    public void setPiece(PieceType piece)
-    {
-        this.piece = piece;
-        switch (piece)
-        {
-            case PieceType.Pawn:
-                characterFace.text = "歩";
-                break;
-
-            case PieceType.Lance:
-                characterFace.text = "香";
-                break;
-
-            case PieceType.Knight:
-                characterFace.text = "桂";
-                break;
-
-            case PieceType.Bishop:
-                characterFace.text = "角";
-                break;
-
-            case PieceType.Rook:
-                characterFace.text = "飛";
-                break;
-
-            case PieceType.Silver:
-                characterFace.text = "銀";
-                break;
-
-            case PieceType.Gold:
-                characterFace.text = "金";
-                break;
-
-            case PieceType.King:
-                characterFace.text = (enemy ? "王" : "玉");
-                break;
-
-            default:
-                break;
-        }
-    }
-
-    public void setSide(bool enemy)
-    {
-        this.enemy = enemy;
-        if (enemy)
-            characterFace.transform.Rotate(0, 180, 0, Space.World);
     }
 
     public bool isEnemy()
@@ -91,14 +51,14 @@ public class Piece : MonoBehaviour
         return promoted;
     }
 
-    public void raised()
+    public void setPiece(PieceType piece, bool enemy, bool promoted)
     {
-        transform.Translate(0, hoverHeight, 0);
-    }
-
-    public void deselected()
-    {
-        transform.Translate(0, -hoverHeight, 0);
+        this.piece = piece;
+        this.enemy = enemy;
+        if (enemy)
+            characterFace.transform.Rotate(0, 180, 0, Space.World);
+        this.promoted = promoted;
+        renderFace(piece);
     }
 
     public void promotion()
@@ -131,34 +91,84 @@ public class Piece : MonoBehaviour
             transform.GetChild(0).Rotate(Vector3.forward, turnSpeed);
             yield return null;
         }
-        switch (piece)
+        renderFace(piece);
+    }
+
+    private void renderFace(PieceType piece)
+    {
+        if (promoted == false)
         {
-            case PieceType.Pawn:
-                characterFace.text = "と";
-                break;
+            switch (piece)
+            {
+                case PieceType.Pawn:
+                    characterFace.text = "歩";
+                    break;
 
-            case PieceType.Lance:
-                characterFace.text = "杏";
-                break;
+                case PieceType.Lance:
+                    characterFace.text = "香";
+                    break;
 
-            case PieceType.Knight:
-                characterFace.text = "圭";
-                break;
+                case PieceType.Knight:
+                    characterFace.text = "桂";
+                    break;
 
-            case PieceType.Bishop:
-                characterFace.text = "馬";
-                break;
+                case PieceType.Bishop:
+                    characterFace.text = "角";
+                    break;
 
-            case PieceType.Rook:
-                characterFace.text = "龍";
-                break;
+                case PieceType.Rook:
+                    characterFace.text = "飛";
+                    break;
 
-            case PieceType.Silver:
-                characterFace.text = "全";
-                break;
+                case PieceType.Silver:
+                    characterFace.text = "銀";
+                    break;
 
-            default:
-                break;
+                case PieceType.Gold:
+                    characterFace.text = "金";
+                    break;
+
+                case PieceType.King:
+                    characterFace.text = (enemy ? "王" : "玉");
+                    break;
+
+                default:
+                    break;
+            }
+            characterFace.color = Color.black;
+        }
+        else
+        {
+            switch (piece)
+            {
+                case PieceType.Pawn:
+                    characterFace.text = "と";
+                    break;
+
+                case PieceType.Lance:
+                    characterFace.text = "杏";
+                    break;
+
+                case PieceType.Knight:
+                    characterFace.text = "圭";
+                    break;
+
+                case PieceType.Bishop:
+                    characterFace.text = "馬";
+                    break;
+
+                case PieceType.Rook:
+                    characterFace.text = "龍";
+                    break;
+
+                case PieceType.Silver:
+                    characterFace.text = "全";
+                    break;
+
+                default:
+                    break;
+            }
+            characterFace.color = Color.red;
         }
     }
 
