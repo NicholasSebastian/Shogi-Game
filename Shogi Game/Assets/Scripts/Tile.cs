@@ -90,13 +90,10 @@ public class Tile : MonoBehaviour
             if (this.piece == null) addPiece(state, enemy, promoted);
             else
             {
-                Debug.Log(
-                    (this.piece.isEnemy() ? "Player's " : "Enemy's ") + state
-                    + " killed " +
-                    (this.piece.isEnemy() ? "Enemy's " : "Player's ") + this.piece.getPiece()
-                );
+                Logger.Log(this.piece.isEnemy(), state, this.piece.getPiece());
                 removePiece();
                 addPiece(state, enemy, promoted);
+                StartCoroutine(logWait());
             }
         }
     }
@@ -150,5 +147,11 @@ public class Tile : MonoBehaviour
         else if (this.piece.isEnemy() == true &&
             this.row < 3)
             this.piece.promotion();
+    }
+
+    private IEnumerator logWait()
+    {
+        yield return new WaitForSeconds(2.0f);
+        Logger.Clear();
     }
 }
