@@ -1,4 +1,4 @@
 # Shogi-Game
-The Japanese Shogi board game remade in Unity for Desktop, iOS and Android.
+An attempt to remake the famous Japanese board game Shogi on Unity.
 
 ![alt text](shogi.png)
